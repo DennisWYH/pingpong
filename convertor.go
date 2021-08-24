@@ -6,7 +6,7 @@ import (
 	pinyin "github.com/mozillazg/go-pinyin"
 )
 
-func main() {
+func converter() {
 	hans := "中国人"
 	// 默认
 	a := pinyin.NewArgs()
