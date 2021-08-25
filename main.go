@@ -7,7 +7,30 @@ import (
 	"io/ioutil"
 	"net/http"
 )
+import bolt "go.etcd.io/bbolt"
 
+func runBBoltDB() {
+	db, err := bolt.Open("pingpong.db", 0666, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("articles"))
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte("2015-01-01"), []byte("First article"))
+	})
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("articles"))
+		v := b.Get([]byte("2015-01-01"))
+		fmt.Printf("%sn", v)
+		tx.DeleteBucket([]byte("articles"))
+		return nil
+	})
+	fmt.Println("closing db now")
+	defer db.Close()
+}
 func runServer() {
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
@@ -62,5 +85,7 @@ type Word struct {
 }
 
 func main() {
+	runBBoltDB()
 	runServer()
+
 }
