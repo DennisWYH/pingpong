@@ -6,31 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"pingpong/db"
 )
-import bolt "go.etcd.io/bbolt"
 
-func runBBoltDB() {
-	db, err := bolt.Open("pingpong.db", 0666, nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-	db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("articles"))
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte("2015-01-01"), []byte("First article"))
-	})
-	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("articles"))
-		v := b.Get([]byte("2015-01-01"))
-		fmt.Printf("%sn", v)
-		tx.DeleteBucket([]byte("articles"))
-		return nil
-	})
-	fmt.Println("closing db now")
-	defer db.Close()
-}
+// to be implemented later
+//func countGrade() string {
+//}
+
+//func deleteKey(key []byte) error {
+//
+//}
 func runServer() {
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
@@ -84,8 +69,19 @@ type Word struct {
 	More        string `json:"more"`
 }
 
-func main() {
-	runBBoltDB()
-	runServer()
+func Init() {
+	// create pingpong db, update an articles bucket, add some data and delete the data.
+	db.RunBBoltDB()
+	// the server shall keep running persistently.
+	//runServer()
+	// update an articles bucket with some data, and print it out.
+	db.CreateArticle("美好一天", "今天我非常高兴。", "whileA", []string{"日记", "生活"})
+	//delete an article key-value pair
+	//db.DeleteArticle("articles", "15")
+	db.DeleteBucket("articles")
 
+}
+
+func main() {
+	Init()
 }
