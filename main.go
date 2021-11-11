@@ -4,43 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"pingpong/db"
 )
-
-// to be implemented later
-//func countGrade() string {
-//}
-
-//func deleteKey(key []byte) error {
-//
-//}
-func runServer() {
-	// Creates a gin router with default middleware:
-	// logger and recovery (crash-free) middleware
-	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
-	router.LoadHTMLGlob("templates/*")
-	router.GET("/home", func(c *gin.Context) {
-		// Call the HTML method of the Context to render a template
-		c.HTML(
-			// Set the HTTP status to 200 (OK)
-			http.StatusOK,
-			// Use the home.html template
-			"home.html",
-			// Pass the data that the page uses (in this case, 'title')
-			gin.H{
-				"title": "Home Page",
-				"page":  "Home Page",
-			},
-		)
-	})
-	router.Run(":8083")
-}
-
 // lookupC2C given a chinese word
 // look it up in word.json and return the explanation
 func lookupC2C(c string) {
@@ -69,19 +38,11 @@ type Word struct {
 	More        string `json:"more"`
 }
 
-func Init() {
-	// create pingpong db, update an articles bucket, add some data and delete the data.
-	db.RunBBoltDB()
-	// the server shall keep running persistently.
-	//runServer()
-	// update an articles bucket with some data, and print it out.
-	db.CreateArticle("美好一天", "今天我非常高兴。", "whileA", []string{"日记", "生活"})
-	//delete an article key-value pair
-	//db.DeleteArticle("articles", "15")
-	db.DeleteBucket("articles")
-
-}
-
 func main() {
-	Init()
+	router := gin.Default()
+	router.GET("/articles", getArticles)
+	router.GET("/articles/:id", getArticleByID)
+
+	router.POST("/addArticle/:title/:content", addArticle)
+	router.Run("localhost:3456")
 }

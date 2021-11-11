@@ -1,0 +1,5 @@
+07/09/2021
+1. viewBucket method causes timeout due to too long response. 
+Need to find out why.
+theory 1: there is a lock on the db forget to close. therefore the db object is waiting.
+theory 2: traversing a bbolt bucket takes forever.
