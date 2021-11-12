@@ -4,11 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"io/ioutil"
-	"net/http"
-	"pingpong/db"
 )
 // lookupC2C given a chinese word
 // look it up in word.json and return the explanation
@@ -25,7 +21,6 @@ func lookupC2C(c string) {
 			fmt.Println(data[i].Explanation)
 		}
 	}
-
 }
 
 type Word struct {
@@ -40,9 +35,9 @@ type Word struct {
 
 func main() {
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
 	router.GET("/articles", getArticles)
-	router.GET("/articles/:id", getArticleByID)
-
-	router.POST("/addArticle/:title/:content", addArticle)
+	router.GET("/article/:id", getArticleByID)
+	router.POST("/addArticle", addArticle)
 	router.Run("localhost:3456")
 }

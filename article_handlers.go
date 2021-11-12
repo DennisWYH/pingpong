@@ -19,29 +19,39 @@ type Article struct {
 	gorm.Model
 }
 
+// API: localhost:3456/articles
 func getArticles(c *gin.Context) {
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
-
 	var articles []Article
 	db.First(&articles)
-	c.IndentedJSON(http.StatusOK, &articles)
+
+	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+		"articles": &articles,
+	})
 }
 
+// API: localhost:3456/article/:ID
 func getArticleByID(c *gin.Context) {
 	id := c.Param("id")
 	intId,_ := strconv.Atoi(id)
 	db,_ := gorm.Open(sqlite.Open("test.db"),&gorm.Config{})
 
-	db.First(&Article{}, "ID=?", intId)
-	c.IndentedJSON(http.StatusOK, &Article{})
+	var article *Article
+	db.First(&article, "ID=?", intId)
+	c.HTML(http.StatusOK, "viewArticlesById.tmpl", gin.H{
+		"article": &article,
+	})
 }
 
-// API: curl -X POST localhost:3456/addArticle/hello/world
+// API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
+//  -d "title=new&content=entry" localhost:3456/addArticle
+// gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
 func addArticle(c *gin.Context){
 	fmt.Println("served by addArticle handler.")
 	var newArticle Article
-	newArticle.Title = c.Param("title")
-	newArticle.Content = c.Param("content")
+
+	newArticle.Title = c.PostForm("title")
+	newArticle.Content = c.PostForm("content")
 
 	// Add the new article to the db table.
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
@@ -50,6 +60,8 @@ func addArticle(c *gin.Context){
 	// show the albums table after adding an entry
 	var articles []Article
 	db.Find(&articles)
-	c.IndentedJSON(http.StatusCreated, &articles)
 
+	c.HTML(http.StatusCreated, "viewArticles.tmpl", gin.H{
+		"articles": &articles,
+	})
 }
