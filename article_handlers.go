@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/mozillazg/go-pinyin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
+	"strings"
 )
 type Article struct {
 	Title         string
@@ -22,6 +24,7 @@ type Article struct {
 // API: localhost:3456/articles
 func getArticles(c *gin.Context) {
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+
 	var articles []Article
 	db.First(&articles)
 
@@ -34,12 +37,30 @@ func getArticles(c *gin.Context) {
 func getArticleByID(c *gin.Context) {
 	id := c.Param("id")
 	intId,_ := strconv.Atoi(id)
-	db,_ := gorm.Open(sqlite.Open("test.db"),&gorm.Config{})
+	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
 
 	var article *Article
 	db.First(&article, "ID=?", intId)
-	c.HTML(http.StatusOK, "viewArticlesById.tmpl", gin.H{
-		"article": &article,
+
+	articleStruct := *article
+	content := articleStruct.Content
+	a := pinyin.NewArgs()
+	a.Style = pinyin.Tone
+	contentPinyins := pinyin.Pinyin(content, a)
+	fmt.Println("pin yin is ", contentPinyins)
+
+	slicedContent := strings.Split(content, "")
+
+	hanziPinyins := make(map[string][]string)
+	for i:=0; i< len(slicedContent);i++ {
+		key := slicedContent[i]
+		value := contentPinyins[i]
+		hanziPinyins[key] = value
+	}
+
+	c.HTML(http.StatusOK, "viewArticleById.tmpl", gin.H{
+		"hanzi": content,
+		"hanziPinyins" : hanziPinyins,
 	})
 }
 
@@ -51,6 +72,10 @@ func addArticle(c *gin.Context){
 	var newArticle Article
 
 	newArticle.Title = c.PostForm("title")
+	//Todo: the content from user input has to be chinese,
+	// for later pinyin convert.
+	//Todo: what if there are English words in the paragraph...
+	// solution: create a map, when English reconized, put blank in there or display english itself.
 	newArticle.Content = c.PostForm("content")
 
 	// Add the new article to the db table.

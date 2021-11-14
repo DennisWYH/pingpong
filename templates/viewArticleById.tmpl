@@ -4,6 +4,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body>
-{{ .article }}
+{{ .hanzi }}
+{{ range $key, $value := .hanziPinyins }}
+     {{ $key }}
+     {{ $value}}
+     <br>
+{{end}}
+
 </body>
 </html>
