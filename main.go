@@ -5,23 +5,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"github.com/jcramb/cedict"
 )
-// lookupC2C given a chinese word
-// look it up in word.json and return the explanation
-func lookupC2C(c string) {
-	dictionaryPath := "./chinese-xinhua/data/word.json"
-	file, _ := ioutil.ReadFile(dictionaryPath)
-	var data = make([]Word, 100)
-	err := json.Unmarshal(file, &data)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for i := 0; i < len(data); i++ {
-		if data[i].Word == c {
-			fmt.Println(data[i].Explanation)
-		}
-	}
-}
 
 type Word struct {
 	Word        string `json:"word"`
@@ -33,8 +18,7 @@ type Word struct {
 	More        string `json:"more"`
 }
 
-func main() {
-	CreateDBTables()
+func startRouting(){
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.GET("/articles", getArticles)
@@ -42,4 +26,13 @@ func main() {
 	router.GET("/article/grade/:grade", getArticleByGrade)
 	router.POST("/addArticle", addArticle)
 	router.Run("localhost:3456")
+}
+
+func main() {
+	d := cedict.New()
+	entry := d.GetByHanzi("睡觉")
+	fmt.Println(entry.Meanings)
+
+	//CreateDBTables()
+	startRouting()
 }
