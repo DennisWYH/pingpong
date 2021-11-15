@@ -5,10 +5,10 @@
 </head>
 <body>
 {{ range $index, $article :=  .articles }}
-{{ $index }}:
-<p>title</p>{{ $article.Title }}
-<p>content</p> {{ $article.Content }}
-<p>id</p> {{ $article.Model.ID }}
+    <p>index: </p> {{ $index }}:
+    <p>title: </p> {{ $article.Title }}
+    <p>content: </p> {{ $article.Content }}
+    <p>id: </p> {{ $article.Model.ID }}
 {{ end }}
 </body>
 </html>

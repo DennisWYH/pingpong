@@ -34,10 +34,12 @@ type Word struct {
 }
 
 func main() {
+	CreateDBTables()
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.GET("/articles", getArticles)
-	router.GET("/article/:id", getArticleByID)
+	router.GET("/article/id/:id", getArticleByID)
+	router.GET("/article/grade/:grade", getArticleByGrade)
 	router.POST("/addArticle", addArticle)
 	router.Run("localhost:3456")
 }

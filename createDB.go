@@ -11,11 +11,7 @@ func CreateDBTables() {
 		panic("failed to connect database")
 	}
 
-	article := Article{
-		Title: "title",
-		Content: "content",
-	}
+	var article *Article
 	db.AutoMigrate(&article)
-
 	db.Create(&article)
 }

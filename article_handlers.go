@@ -13,9 +13,9 @@ import (
 type Article struct {
 	Title         string
 	Content       string
+	Grade         string
 	//Tags          []string
 	//WordCount     int64
-	//Grade         string
 	//NumberOfRead  int64
 	//NumberOfFlash int64
 	gorm.Model
@@ -26,14 +26,15 @@ func getArticles(c *gin.Context) {
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
 
 	var articles []Article
-	db.First(&articles)
+	db.Find(&articles)
 
+	c.IndentedJSON(http.StatusOK, &articles)
 	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
 		"articles": &articles,
 	})
 }
 
-// API: localhost:3456/article/:ID
+// API: localhost:3456/article/id/:id
 func getArticleByID(c *gin.Context) {
 	id := c.Param("id")
 	intId,_ := strconv.Atoi(id)
@@ -64,6 +65,37 @@ func getArticleByID(c *gin.Context) {
 	})
 }
 
+// API: localhost:3456/article/grade/:grade
+func getArticleByGrade(c *gin.Context) {
+	grade := c.Param("grade")
+	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+
+	var article *Article
+	db.First(&article, "Grade=?", grade)
+
+	articleStruct := *article
+	content := articleStruct.Content
+	a := pinyin.NewArgs()
+	a.Style = pinyin.Tone
+	contentPinyins := pinyin.Pinyin(content, a)
+	fmt.Println("pin yin is ", contentPinyins)
+
+	slicedContent := strings.Split(content, "")
+
+	hanziPinyins := make(map[string][]string)
+	for i:=0; i< len(slicedContent);i++ {
+		key := slicedContent[i]
+		value := contentPinyins[i]
+		hanziPinyins[key] = value
+	}
+
+	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
+		"hanzi": content,
+		"hanziPinyins" : hanziPinyins,
+	})
+}
+
+
 // API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
 //  -d "title=new&content=entry" localhost:3456/addArticle
 // gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
@@ -74,9 +106,11 @@ func addArticle(c *gin.Context){
 	newArticle.Title = c.PostForm("title")
 	//Todo: the content from user input has to be chinese,
 	// for later pinyin convert.
+
 	//Todo: what if there are English words in the paragraph...
 	// solution: create a map, when English reconized, put blank in there or display english itself.
 	newArticle.Content = c.PostForm("content")
+	newArticle.Grade = c.PostForm("grade")
 
 	// Add the new article to the db table.
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
