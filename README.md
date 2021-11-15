@@ -2,7 +2,7 @@
 A learn-Chinese-by-reading project for intermediate to advanced Chinese-as-second-language learners.
 Pingpong website provides abundant reading materials for students to continuous enrich their bank of new vocabularies and improve the comprehension of the Chinese language.
 
-The site provides the below features:
+The site provides below features:
 1. Materials are graded so that students can focus on taking in materials just on their level and slightly above. (according to mainstream second language aquizicion theory continuoues input of materials of such plays the biggest role in language learning)
 2. Grading system will use the color schema, from white to mint to represent the difficulty of the material. (white->black->blue->green->yellow->red->mint)
    (this color schema is the one that is used in my bouldering gym...)
