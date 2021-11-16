@@ -1,4 +1,4 @@
-# pingpong
+# pingpong 乒乓 🏓️
 A learn-Chinese-by-reading project for intermediate to advanced Chinese-as-second-language learners.
 Pingpong website provides abundant reading materials for students to continuous enrich their bank of new vocabularies and improve the comprehension of the Chinese language.
 
