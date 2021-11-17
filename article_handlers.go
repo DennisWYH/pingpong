@@ -80,18 +80,7 @@ func getArticleByGrade(c *gin.Context) {
 
 	hanziTokens := util.Tokenizer(content)
 
-	a := pinyin.NewArgs()
-	a.Style = pinyin.Tone
-	contentPinyins := pinyin.Pinyin(content, a)
-
-	slicedContent := strings.Split(content, "")
-
-	hanziPinyins := make(map[string][]string)
-	for i:=0; i< len(slicedContent);i++ {
-		key := slicedContent[i]
-		value := contentPinyins[i]
-		hanziPinyins[key] = value
-	}
+	hanziPinyins := util.MakeHanziWithPinyins(content)
 
 	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
 		"hanzi": content,
