@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"github.com/jcramb/cedict"
 )
 
 type Word struct {
@@ -28,11 +24,9 @@ func startRouting(){
 	router.Run("localhost:3456")
 }
 
-func main() {
-	d := cedict.New()
-	entry := d.GetByHanzi("睡觉")
-	fmt.Println(entry.Meanings)
 
+func main() {
 	//CreateDBTables()
+//	cn_en.Cn_en_lookup("总共")
 	startRouting()
 }

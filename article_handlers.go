@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"pingpong/util"
 )
+
 type Article struct {
 	Title         string
 	Content       string
@@ -71,14 +73,16 @@ func getArticleByGrade(c *gin.Context) {
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
 
 	var article *Article
-	db.First(&article, "Grade=?", grade)
+	db.Find(&article, "Grade=?", grade)
 
 	articleStruct := *article
 	content := articleStruct.Content
+
+	hanziTokens := util.Tokenizer(content)
+
 	a := pinyin.NewArgs()
 	a.Style = pinyin.Tone
 	contentPinyins := pinyin.Pinyin(content, a)
-	fmt.Println("pin yin is ", contentPinyins)
 
 	slicedContent := strings.Split(content, "")
 
@@ -92,6 +96,7 @@ func getArticleByGrade(c *gin.Context) {
 	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
 		"hanzi": content,
 		"hanziPinyins" : hanziPinyins,
+		"hanziTokens" : hanziTokens,
 	})
 }
 

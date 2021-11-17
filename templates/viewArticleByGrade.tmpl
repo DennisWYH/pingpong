@@ -11,5 +11,11 @@
      <br>
 {{end}}
 
+{{ range $key, $value := .hanziTokens }}
+     {{ $value }}
+     {{ $key }}
+     <br>
+{{end}}
+
 </body>
 </html>

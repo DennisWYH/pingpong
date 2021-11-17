@@ -1,0 +1,15 @@
+package util
+
+import "github.com/xujiajun/gotokenizer"
+
+func Tokenizer(text string) []string {
+	dictPath := "/Users/yunhaiwang/go/pkg/mod/github.com/xujiajun/gotokenizer@v1.1.0/data/zh/dict.txt"
+	// NewMaxMatch default wordFilter is NumAndLetterWordFilter
+	mm := gotokenizer.NewMaxMatch(dictPath)
+	// load dict
+	mm.LoadDict()
+
+	tokenizedStrings, _ := mm.Get(text)
+	return tokenizedStrings
+}
+
