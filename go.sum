@@ -1,3 +1,5 @@
+github.com/Lofanmi/pinyin-golang v0.0.0-20211114132645-1db892057f20 h1:QUwRV0ZgSjXBJnKOJh0T5rqe1jLWxlR5AvBLWSYJ7qg=
+github.com/Lofanmi/pinyin-golang v0.0.0-20211114132645-1db892057f20/go.mod h1:J7A5UW8HA8b8lsEO/OshykiGGfmdQEnbDE53D23JsXE=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

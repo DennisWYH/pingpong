@@ -26,7 +26,5 @@ func startRouting(){
 
 
 func main() {
-	//CreateDBTables()
-//	cn_en.Cn_en_lookup("总共")
 	startRouting()
 }

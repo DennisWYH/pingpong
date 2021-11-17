@@ -3,6 +3,7 @@ module pingpong
 go 1.16
 
 require (
+	github.com/Lofanmi/pinyin-golang v0.0.0-20211114132645-1db892057f20 // indirect
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

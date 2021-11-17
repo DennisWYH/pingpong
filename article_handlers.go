@@ -7,9 +7,10 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
+	"pingpong/util"
 	"strconv"
 	"strings"
-	"pingpong/util"
+	//"pingpong/util"
 )
 
 type Article struct {
@@ -72,20 +73,38 @@ func getArticleByGrade(c *gin.Context) {
 	grade := c.Param("grade")
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
 
-	var article *Article
-	db.Find(&article, "Grade=?", grade)
+	var articles *[]Article
+	db.Find(&articles, "Grade=?", grade)
 
-	articleStruct := *article
-	content := articleStruct.Content
 
-	hanziTokens := util.Tokenizer(content)
+	var hanzis []string
+	var pinyins []string
+	var tokenizedContents [][]string
+	var words []string
+	var wordsEns [][]string
 
-	hanziPinyins := util.MakeHanziWithPinyins(content)
+	for _, article := range *articles {
+		articleStruct := article
+		content := articleStruct.Content
+
+		hanzis = append(hanzis, content)
+		pinyins = append(pinyins, util.HanziToPinyins(content))
+		tokenizedContent := util.Tokenizer(content)
+		tokenizedContents = append(tokenizedContents, tokenizedContent)
+		words = util.ExtractWords(tokenizedContent)
+
+	}
+	for _, word := range words {
+		wordsEn := util.Cn_en_lookup(word)
+		wordsEns = append(wordsEns, wordsEn)
+	}
 
 	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
-		"hanzi": content,
-		"hanziPinyins" : hanziPinyins,
-		"hanziTokens" : hanziTokens,
+		"hanzis": hanzis,
+		"pinyins": pinyins,
+		"tokenizedContents" : tokenizedContents,
+		"words": words,
+		"wordsEns": wordsEns,
 	})
 }
 
