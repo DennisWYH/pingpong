@@ -18,9 +18,11 @@ func startRouting(){
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.GET("/articles", getArticles)
-	router.GET("/article/id/:id", getArticleByID)
+ 	router.GET("/article/id/:id", getArticleByID)
 	router.GET("/article/grade/:grade", getArticleByGrade)
 	router.POST("/addArticle", addArticle)
+	router.DELETE("/article/id/:id", deleteArticlebyID)
+	router.PUT("/article/id/:id", modifyArticle)
 	router.Run("localhost:3456")
 }
 

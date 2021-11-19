@@ -10,7 +10,6 @@ import (
 	"pingpong/util"
 	"strconv"
 	"strings"
-	//"pingpong/util"
 )
 
 type Article struct {
@@ -36,6 +35,22 @@ func getArticles(c *gin.Context) {
 		"articles": &articles,
 	})
 }
+
+// API: curl -X DELETE localhost:3456/articles/id/:id
+func deleteArticleByID(c *gin.Context) {
+	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+
+	var articles []Article
+	id := c.Param("id")
+	intId,_ := strconv.Atoi(id)
+	db.Find(&articles, intId)
+
+	c.IndentedJSON(http.StatusOK, &articles)
+	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+		"articles": &articles,
+	})
+}
+
 
 // API: localhost:3456/article/id/:id
 func getArticleByID(c *gin.Context) {
