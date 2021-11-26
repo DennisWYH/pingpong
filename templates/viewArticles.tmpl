@@ -5,7 +5,7 @@
 </head>
 <body>
 {{ range $index, $article :=  .articles }}
-    <p>index: </p> {{ $index }}:
+    <p>index: </p> {{ $article.ID }}:
     <p>title: </p> {{ $article.Title }}
     <p>content: </p> {{ $article.Content }}
     <p>id: </p> {{ $article.Model.ID }}

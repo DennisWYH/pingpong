@@ -21,8 +21,8 @@ func startRouting(){
  	router.GET("/article/id/:id", getArticleByID)
 	router.GET("/article/grade/:grade", getArticleByGrade)
 	router.POST("/addArticle", addArticle)
-	router.DELETE("/article/id/:id", deleteArticlebyID)
-	router.PUT("/article/id/:id", modifyArticle)
+	router.DELETE("/article/id/:id", deleteArticleByID)
+	router.PUT("/update/article/id/:id", updateArticleByID)
 	router.Run("localhost:3456")
 }
 

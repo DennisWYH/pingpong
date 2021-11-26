@@ -36,21 +36,41 @@ func getArticles(c *gin.Context) {
 	})
 }
 
-// API: curl -X DELETE localhost:3456/articles/id/:id
+// API: curl -X DELETE localhost:3456/article/id/:id
 func deleteArticleByID(c *gin.Context) {
 	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
 
-	var articles []Article
+	var article *Article
 	id := c.Param("id")
 	intId,_ := strconv.Atoi(id)
-	db.Find(&articles, intId)
+	db.Delete(&article, intId)
 
+	var articles *[]Article
+	db.Find(&articles)
 	c.IndentedJSON(http.StatusOK, &articles)
 	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
 		"articles": &articles,
 	})
 }
 
+// API: curl -X PUT -d "content=?" localhost:3456/update/article/id/:id
+func updateArticleByID(c *gin.Context) {
+	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+
+	var article *Article
+	id := c.Param("id")
+	intId,_ := strconv.Atoi(id)
+
+	db.First(&article, "ID=?", intId)
+
+	article.Content = c.PostForm("content")
+	db.Save(&article)
+
+	c.IndentedJSON(http.StatusOK, &article)
+	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+		"articles": &article,
+	})
+}
 
 // API: localhost:3456/article/id/:id
 func getArticleByID(c *gin.Context) {
