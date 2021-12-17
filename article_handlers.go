@@ -13,9 +13,9 @@ import (
 )
 
 type Article struct {
-	Title         string
-	Content       string
-	Grade         string
+	Title   string
+	Content string
+	Grade   string
 	//Tags          []string
 	//WordCount     int64
 	//NumberOfRead  int64
@@ -23,9 +23,9 @@ type Article struct {
 	gorm.Model
 }
 
-// API: localhost:3456/articles
+// API: curl localhost:3456/articles
 func getArticles(c *gin.Context) {
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var articles []Article
 	db.Find(&articles)
@@ -38,11 +38,11 @@ func getArticles(c *gin.Context) {
 
 // API: curl -X DELETE localhost:3456/article/id/:id
 func deleteArticleByID(c *gin.Context) {
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
 	id := c.Param("id")
-	intId,_ := strconv.Atoi(id)
+	intId, _ := strconv.Atoi(id)
 	db.Delete(&article, intId)
 
 	var articles *[]Article
@@ -53,13 +53,28 @@ func deleteArticleByID(c *gin.Context) {
 	})
 }
 
+// API: curl -X DELETE localhost:3456/articles
+func deleteAllArticle(c *gin.Context) {
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+
+	// query all the articles
+	var articles *[]Article
+	db.Find(&articles)
+
+	// delete
+	db.Delete(&articles)
+
+	// get all articles to see if there is articles left in the db.
+	getArticles(c)
+}
+
 // API: curl -X PUT -d "content=?" localhost:3456/update/article/id/:id
 func updateArticleByID(c *gin.Context) {
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
 	id := c.Param("id")
-	intId,_ := strconv.Atoi(id)
+	intId, _ := strconv.Atoi(id)
 
 	db.First(&article, "ID=?", intId)
 
@@ -75,8 +90,8 @@ func updateArticleByID(c *gin.Context) {
 // API: localhost:3456/article/id/:id
 func getArticleByID(c *gin.Context) {
 	id := c.Param("id")
-	intId,_ := strconv.Atoi(id)
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+	intId, _ := strconv.Atoi(id)
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
 	db.First(&article, "ID=?", intId)
@@ -91,26 +106,25 @@ func getArticleByID(c *gin.Context) {
 	slicedContent := strings.Split(content, "")
 
 	hanziPinyins := make(map[string][]string)
-	for i:=0; i< len(slicedContent);i++ {
+	for i := 0; i < len(slicedContent); i++ {
 		key := slicedContent[i]
 		value := contentPinyins[i]
 		hanziPinyins[key] = value
 	}
 
 	c.HTML(http.StatusOK, "viewArticleById.tmpl", gin.H{
-		"hanzi": content,
-		"hanziPinyins" : hanziPinyins,
+		"hanzi":        content,
+		"hanziPinyins": hanziPinyins,
 	})
 }
 
 // API: localhost:3456/article/grade/:grade
 func getArticleByGrade(c *gin.Context) {
 	grade := c.Param("grade")
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"),&gorm.Config{})
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var articles *[]Article
 	db.Find(&articles, "Grade=?", grade)
-
 
 	var hanzis []string
 	var pinyins []string
@@ -135,19 +149,18 @@ func getArticleByGrade(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
-		"hanzis": hanzis,
-		"pinyins": pinyins,
-		"tokenizedContents" : tokenizedContents,
-		"words": words,
-		"wordsEns": wordsEns,
+		"hanzis":            hanzis,
+		"pinyins":           pinyins,
+		"tokenizedContents": tokenizedContents,
+		"words":             words,
+		"wordsEns":          wordsEns,
 	})
 }
-
 
 // API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
 //  -d "title=new&content=entry" localhost:3456/addArticle
 // gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
-func addArticle(c *gin.Context){
+func addArticle(c *gin.Context) {
 	fmt.Println("served by addArticle handler.")
 	var newArticle Article
 
@@ -161,7 +174,7 @@ func addArticle(c *gin.Context){
 	newArticle.Grade = c.PostForm("grade")
 
 	// Add the new article to the db table.
-	db,_ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 	db.Create(&newArticle)
 
 	// show the albums table after adding an entry
