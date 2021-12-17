@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
+	"net/url"
 	"pingpong/util"
 	"strconv"
 	"strings"
@@ -24,7 +25,7 @@ type Article struct {
 }
 
 // API: curl localhost:3456/articles
-func getArticles(c *gin.Context) {
+func GetArticles(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var articles []Article
@@ -37,13 +38,13 @@ func getArticles(c *gin.Context) {
 }
 
 // API: curl -X DELETE localhost:3456/article/id/:id
-func deleteArticleByID(c *gin.Context) {
+func DeleteArticleByID(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
 	id := c.Param("id")
-	intId, _ := strconv.Atoi(id)
-	db.Delete(&article, intId)
+	intID, _ := strconv.Atoi(id)
+	db.Delete(&article, intID)
 
 	var articles *[]Article
 	db.Find(&articles)
@@ -54,7 +55,7 @@ func deleteArticleByID(c *gin.Context) {
 }
 
 // API: curl -X DELETE localhost:3456/articles
-func deleteAllArticle(c *gin.Context) {
+func DeleteAllArticle(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	// query all the articles
@@ -65,18 +66,18 @@ func deleteAllArticle(c *gin.Context) {
 	db.Delete(&articles)
 
 	// get all articles to see if there is articles left in the db.
-	getArticles(c)
+	GetArticles(c)
 }
 
 // API: curl -X PUT -d "content=?" localhost:3456/update/article/id/:id
-func updateArticleByID(c *gin.Context) {
+func UpdateArticleByID(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
 	id := c.Param("id")
-	intId, _ := strconv.Atoi(id)
+	intID, _ := strconv.Atoi(id)
 
-	db.First(&article, "ID=?", intId)
+	db.First(&article, "ID=?", intID)
 
 	article.Content = c.PostForm("content")
 	db.Save(&article)
@@ -88,13 +89,13 @@ func updateArticleByID(c *gin.Context) {
 }
 
 // API: localhost:3456/article/id/:id
-func getArticleByID(c *gin.Context) {
+func GetArticleByID(c *gin.Context) {
 	id := c.Param("id")
-	intId, _ := strconv.Atoi(id)
+	intID, _ := strconv.Atoi(id)
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
-	db.First(&article, "ID=?", intId)
+	db.First(&article, "ID=?", intID)
 
 	articleStruct := *article
 	content := articleStruct.Content
@@ -119,7 +120,7 @@ func getArticleByID(c *gin.Context) {
 }
 
 // API: localhost:3456/article/grade/:grade
-func getArticleByGrade(c *gin.Context) {
+func GetArticleByGrade(c *gin.Context) {
 	grade := c.Param("grade")
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
@@ -158,18 +159,17 @@ func getArticleByGrade(c *gin.Context) {
 }
 
 // API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
-//  -d "title=new&content=entry" localhost:3456/addArticle
+//  -d "title=new&content=entry" localhost:3456/addSimpleArticle
 // gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
-func addArticle(c *gin.Context) {
-	fmt.Println("served by addArticle handler.")
-	var newArticle Article
-
-	newArticle.Title = c.PostForm("title")
+func AddArticle(c *gin.Context) {
 	//Todo: the content from user input has to be chinese,
 	// for later pinyin convert.
 
 	//Todo: what if there are English words in the paragraph...
-	// solution: create a map, when English reconized, put blank in there or display english itself.
+	// solution: create a map, when English recognized, put blank in there or display english itself.
+	var newArticle Article
+
+	newArticle.Title = c.PostForm("title")
 	newArticle.Content = c.PostForm("content")
 	newArticle.Grade = c.PostForm("grade")
 
@@ -177,11 +177,38 @@ func addArticle(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 	db.Create(&newArticle)
 
-	// show the albums table after adding an entry
+	// show the article table after adding an entry
 	var articles []Article
 	db.Find(&articles)
 
 	c.HTML(http.StatusCreated, "viewArticles.tmpl", gin.H{
 		"articles": &articles,
 	})
+}
+
+func addTestArticle(title, content, grade string) {
+	requestURL := "http://localhost:3456/addSimpleArticle"
+	requestForm := url.Values{}
+	requestForm.Add("title", title)
+	requestForm.Add("content", content)
+	requestForm.Add("grade", grade)
+	req, err := http.NewRequest(http.MethodPost, requestURL, strings.NewReader(requestForm.Encode()))
+	if err != nil {
+		fmt.Println("BatchAddTestArticleData Error in request:", err)
+		return
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+}
+
+// API: curl -X POST localhost:3456/batchAddArticles
+func BatchAddTestArticleData(c *gin.Context) {
+	addTestArticle("第一篇文章", "今天天气很好。", "blue")
+	addTestArticle("第二篇文章", "我和小丽是好朋友。", "white")
+	addTestArticle("第三篇文章", "太阳很晒。", "black")
+	GetArticles(c)
 }

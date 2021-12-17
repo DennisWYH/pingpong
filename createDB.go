@@ -3,6 +3,7 @@ package main
 import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"pingpong/api"
 )
 
 func CreateDBTables() {
@@ -11,7 +12,7 @@ func CreateDBTables() {
 		panic("failed to connect database")
 	}
 
-	var article *Article
+	var article *api.Article
 	db.AutoMigrate(&article)
 	db.Create(&article)
 }

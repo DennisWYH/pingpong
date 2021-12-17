@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"pingpong/api"
 )
 
 type Word struct {
@@ -17,13 +18,24 @@ type Word struct {
 func startRouting() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
-	router.GET("/articles", getArticles)
-	router.GET("/article/id/:id", getArticleByID)
-	router.GET("/article/grade/:grade", getArticleByGrade)
-	router.POST("/addArticle", addArticle)
-	router.DELETE("/article/id/:id", deleteArticleByID)
-	router.DELETE("/articles", deleteAllArticle)
-	router.PUT("/update/article/id/:id", updateArticleByID)
+
+	// get articles
+	router.GET("/articles", api.GetArticles)
+	router.GET("/article/id/:id", api.GetArticleByID)
+	router.GET("/article/grade/:grade", api.GetArticleByGrade)
+
+	// add articles
+	router.POST("/addSimpleArticle", api.AddArticle)
+	router.POST("/batchAddArticles", api.BatchAddTestArticleData)
+
+	// delete articles
+	router.DELETE("/article/id/:id", api.DeleteArticleByID)
+	router.DELETE("/articles", api.DeleteAllArticle)
+
+	// update an artile
+	router.PUT("/update/article/id/:id", api.UpdateArticleByID)
+
+	// run the server
 	router.Run("localhost:3456") //nolint:errcheck
 }
 
