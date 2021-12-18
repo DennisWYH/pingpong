@@ -26,12 +26,13 @@ type Article struct {
 
 // API: curl localhost:3456/articles
 func GetArticles(c *gin.Context) {
+
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var articles []Article
 	db.Find(&articles)
 
-	c.IndentedJSON(http.StatusOK, &articles)
+	//c.IndentedJSON(http.StatusOK, &articles)
 	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
 		"articles": &articles,
 	})
@@ -51,6 +52,18 @@ func DeleteArticleByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, &articles)
 	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
 		"articles": &articles,
+	})
+}
+
+// API: curl localhost:3456/focusedRead
+func GetFocusedArticles(c *gin.Context) {
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+
+	var article *Article
+	db.First(&article)
+
+	c.HTML(http.StatusOK, "viewFocusedRead.tmpl", gin.H{
+		"article": &article,
 	})
 }
 
@@ -207,7 +220,7 @@ func addTestArticle(title, content, grade string) {
 
 // API: curl -X POST localhost:3456/batchAddArticles
 func BatchAddTestArticleData(c *gin.Context) {
-	addTestArticle("第一篇文章", "今天天气很好。", "blue")
+	addTestArticle("第一篇文章", "瑞士政府当地时间17日宣布新的防疫措施，以应对目前严峻的新冠肺炎疫情形势。从本月20日起，未接种疫苗者将不能进入餐馆、酒吧以及文化、体育、休闲等室内公共活动场所；恢复所有人在家工作的要求，一些必须到工作场所进行的工作除外；室内聚会人数不能超过30人，如果聚会中有未接种疫苗者，则不能超过10人。\n据悉，该措施将持续到明年1月24日。\n17日，瑞士新增新冠肺炎确诊病例9941例，目前该国累计有294例新冠肺炎患者在医院接受重症监护。瑞士政府担心，随着奥密克戎毒株的传播，医院重症监护病房可能会出现超负荷运转。\n责任编辑：苏晨\n\n。", "blue")
 	addTestArticle("第二篇文章", "我和小丽是好朋友。", "white")
 	addTestArticle("第三篇文章", "太阳很晒。", "black")
 	GetArticles(c)
