@@ -17,7 +17,7 @@ type Word struct {
 
 func startRouting() {
 	router := gin.Default()
-	router.LoadHTMLGlob("templates/*")
+	router.LoadHTMLGlob("static/templates/*")
 
 	// get articles
 	router.GET("/articles", api.GetArticles)
@@ -36,6 +36,8 @@ func startRouting() {
 	// update an artile
 	router.PUT("/update/article/id/:id", api.UpdateArticleByID)
 
+	// serve static files
+	router.Static("./static", "./static")
 	// run the server
 	router.Run("localhost:3456") //nolint:errcheck
 }

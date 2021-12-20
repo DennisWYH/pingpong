@@ -1,0 +1,17 @@
+{
+  "中国": {
+    "pinyin": "zhong1 guo2",
+    "enLookup": "china; middle-country",
+    "cnLookup": "国名，中国。"
+  },
+  "中国人": {
+    "pinyin": "zhong1 guo2 ren2",
+    "enLookup": "chinese; chinese language or people",
+    "cnLookup": "中国的人。"
+  },
+  "水杯": {
+    "pinyin": "shui3 bei1",
+    "enLookup": "装水用的容器",
+    "cnLookup": "container for water"
+  }
+}

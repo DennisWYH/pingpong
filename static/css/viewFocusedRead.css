@@ -8,3 +8,62 @@
 body {
     background-color: #ededf0;
 }
+
+#row1 {
+    background-color: yellow;
+    height: 40px;
+    width: 1200px;
+}
+
+#row2 {
+    background-color: orange;
+    height: 600px;
+    width: 1200px;
+}
+
+#row2col1 {
+    background-color: cadetblue;
+    width: 400px;
+}
+
+#id {
+    background-color: cadetblue;
+    width: 400px;
+}
+
+#article-content {
+    background-color: yellow;
+    height: 400px;
+}
+
+#row2col1row3 {
+    background-color: greenyellow;
+    height: 100px;
+}
+
+#row2col1row3col1 {
+
+}
+
+#arrow-previous {
+    height: 60px;
+    width: 60px;
+    color: black
+}
+
+#place-holder {
+    background-color: blue;
+}
+
+#row2col1row3col3 {
+    background-color: palevioletred;
+}
+
+#arrow-next {
+    height: 60px;
+    width: 60px
+}
+
+#row2col2 {
+    background-color: antiquewhite;
+}
