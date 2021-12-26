@@ -17,22 +17,39 @@ type Article struct {
 	Title   string
 	Content string
 	Grade   string
+	gorm.Model
 	//Tags          []string
 	//WordCount     int64
 	//NumberOfRead  int64
 	//NumberOfFlash int64
-	gorm.Model
 }
 
 type Lookup struct {
-	Hanzi    string
-	Pinyin   string
-	EnLookup string
-	CnLookup string
+	Hanzi     string
+	Pinyin    string
+	EnLookup  string
+	CnLookup  string
+	ArticleID int
+	Article   Article
+	gorm.Model
 }
 
 // API: curl localhost:3456/articles
 func GetArticles(c *gin.Context) {
+
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+
+	var articles []Article
+	db.Find(&articles)
+
+	//c.IndentedJSON(http.StatusOK, &articles)
+	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+		"articles": &articles,
+	})
+}
+
+// API: curl localhost:3456/lookups
+func GetLookups(c *gin.Context) {
 
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
@@ -69,11 +86,9 @@ func GetFocusedArticles(c *gin.Context) {
 	var article *Article
 	db.First(&article)
 
-	lookups := []Lookup{}
-	lookup1 := Lookup{"中国", "zhong1 guo2", "china; middle-country", "国名，中国"}
-	lookup2 := Lookup{"水杯", "shui3 bei1", "container for water", "装水用的容器"}
-	lookups = append(lookups, lookup1)
-	lookups = append(lookups, lookup2)
+	var lookups []Lookup
+	db.Find(&lookups)
+
 	c.HTML(http.StatusOK, "viewFocusedRead.tmpl", gin.H{
 		"article": &article,
 		"lookups": &lookups,
@@ -237,4 +252,31 @@ func BatchAddTestArticleData(c *gin.Context) {
 	addTestArticle("第二篇文章", "我和小丽是好朋友。", "white")
 	addTestArticle("第三篇文章", "太阳很晒。", "black")
 	GetArticles(c)
+}
+
+func addTestLookup(hanzi string, pinyin string, enLookup string, cnLookup string, articleID int) {
+	var newLookup Lookup
+	newLookup.Hanzi = hanzi
+	newLookup.Pinyin = pinyin
+	newLookup.EnLookup = enLookup
+	newLookup.CnLookup = cnLookup
+	newLookup.ArticleID = articleID
+
+	// Add the newLookup to the db Lookup table.
+	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+	db.Create(&newLookup)
+
+	// show the article table after adding an entry
+	var lookups []Lookup
+	db.Find(&lookups)
+
+	fmt.Println(&lookups)
+}
+
+// API: curl -X POST localhost:3456/batchAddLookup
+func BatchAddTestLookupData() {
+	addTestLookup("文章", "wen zhang", "article", "文章", 8)
+	addTestLookup("我", "wo", "me", "人称", 8)
+	addTestLookup("内容", "nei rong", "content", "文章的内容", 8)
+	//GetLookups(c)
 }

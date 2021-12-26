@@ -15,4 +15,9 @@ func CreateDBTables() {
 	var article *api.Article
 	db.AutoMigrate(&article)
 	db.Create(&article)
+
+	// Some look up entries belong to an article
+	var lookup *api.Lookup
+	db.AutoMigrate(&lookup)
+	db.Create(&lookup)
 }
