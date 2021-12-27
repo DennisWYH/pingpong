@@ -20,21 +20,21 @@ func startRouting() {
 	router.LoadHTMLGlob("static/templates/*")
 
 	// get articles
-	router.GET("/articles", api.GetArticles)
-	router.GET("/focusedRead", api.GetFocusedArticles)
-	router.GET("/article/id/:id", api.GetArticleByID)
-	router.GET("/article/grade/:grade", api.GetArticleByGrade)
+	router.GET("/articles", api.GetArticlesHandler)
+	router.GET("/focusedRead", api.GetFocusedArticlesHandler)
+	router.GET("/article/id/:id", api.GetArticleByIDHandler)
+	router.GET("/article/grade/:grade", api.GetArticleByGradeHandler)
 
 	// add articles
-	router.POST("/addSimpleArticle", api.AddArticle)
-	router.POST("/batchAddArticles", api.BatchAddTestArticleData)
+	router.POST("/addSimpleArticle", api.AddArticleHandler)
+	router.POST("/batchAddArticles", api.BatchAddTestArticleDataHandler)
 
 	// delete articles
-	router.DELETE("/article/id/:id", api.DeleteArticleByID)
-	router.DELETE("/articles", api.DeleteAllArticle)
+	router.DELETE("/article/id/:id", api.DeleteArticleByIDHandler)
+	router.DELETE("/articles", api.DeleteAllArticleHandler)
 
 	// update an artile
-	router.PUT("/update/article/id/:id", api.UpdateArticleByID)
+	router.PUT("/update/article/id/:id", api.UpdateArticleByIDHandler)
 
 	// serve static files
 	router.Static("./static", "./static")
@@ -44,4 +44,5 @@ func startRouting() {
 
 func main() {
 	startRouting()
+	//api.GetLookups()
 }
