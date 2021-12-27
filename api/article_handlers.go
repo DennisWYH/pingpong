@@ -34,6 +34,7 @@ type Lookup struct {
 	gorm.Model
 }
 
+// GetArticles returns all the articles in the Article table
 // API: curl localhost:3456/articles
 func GetArticles(c *gin.Context) {
 
@@ -48,20 +49,22 @@ func GetArticles(c *gin.Context) {
 	})
 }
 
+// GetLookups returns all the lookups data in the Lookup table
 // API: curl localhost:3456/lookups
 func GetLookups(c *gin.Context) {
 
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
-	var articles []Article
-	db.Find(&articles)
+	var lookups []Lookup
+	db.Find(&lookups)
 
 	//c.IndentedJSON(http.StatusOK, &articles)
-	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
-		"articles": &articles,
+	c.HTML(http.StatusOK, "viewLookups.tmpl", gin.H{
+		"lookups": &lookups,
 	})
 }
 
+// DeleteArticleByID deletes article given the article ID
 // API: curl -X DELETE localhost:3456/article/id/:id
 func DeleteArticleByID(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
@@ -95,6 +98,7 @@ func GetFocusedArticles(c *gin.Context) {
 	})
 }
 
+// DeleteAllArticle deletes all articles for testing purpose
 // API: curl -X DELETE localhost:3456/articles
 func DeleteAllArticle(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
@@ -110,6 +114,7 @@ func DeleteAllArticle(c *gin.Context) {
 	GetArticles(c)
 }
 
+// UpdateArticleByID updates an article given its ID
 // API: curl -X PUT -d "content=?" localhost:3456/update/article/id/:id
 func UpdateArticleByID(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
@@ -129,6 +134,7 @@ func UpdateArticleByID(c *gin.Context) {
 	})
 }
 
+// GetArticleByID returns article given its ID
 // API: localhost:3456/article/id/:id
 func GetArticleByID(c *gin.Context) {
 	id := c.Param("id")
@@ -160,6 +166,7 @@ func GetArticleByID(c *gin.Context) {
 	})
 }
 
+// GetArticleByGrade returns the articles given by the grade
 // API: localhost:3456/article/grade/:grade
 func GetArticleByGrade(c *gin.Context) {
 	grade := c.Param("grade")
@@ -199,14 +206,15 @@ func GetArticleByGrade(c *gin.Context) {
 	})
 }
 
+// AddArticle adds an article to the Article table
 // API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
 //  -d "title=new&content=entry" localhost:3456/addSimpleArticle
 // gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
 func AddArticle(c *gin.Context) {
-	//Todo: the content from user input has to be chinese,
+	// Todo: the content from user input has to be chinese,
 	// for later pinyin convert.
 
-	//Todo: what if there are English words in the paragraph...
+	// Todo: what if there are English words in the paragraph...
 	// solution: create a map, when English recognized, put blank in there or display english itself.
 	var newArticle Article
 
@@ -246,9 +254,14 @@ func addTestArticle(title, content, grade string) {
 	defer resp.Body.Close()
 }
 
+// BatchAddTestArticleData adds some test articles for testing
 // API: curl -X POST localhost:3456/batchAddArticles
 func BatchAddTestArticleData(c *gin.Context) {
-	addTestArticle("第一篇文章", "瑞士政府当地时间17日宣布新的防疫措施，以应对目前严峻的新冠肺炎疫情形势。从本月20日起，未接种疫苗者将不能进入餐馆、酒吧以及文化、体育、休闲等室内公共活动场所；恢复所有人在家工作的要求，一些必须到工作场所进行的工作除外；室内聚会人数不能超过30人，如果聚会中有未接种疫苗者，则不能超过10人。据悉，该措施将持续到明年1月24日。17日，瑞士新增新冠肺炎确诊病例9941例，目前该国累计有294例新冠肺炎患者在医院接受重症监护。瑞士政府担心，随着奥密克戎毒株的传播，医院重症监护病房可能会出现超负荷运转。", "blue")
+	addTestArticle("第一篇文章", "瑞士政府当地时间17日宣布新的防疫措施，以应对目前严峻的新冠肺炎疫情形势。从本月20日起，"+
+		"未接种疫苗者将不能进入餐馆、酒吧以及文化、体育、休闲等室内公共活动场所；恢复所有人在家工作的要求，一些必须到工作场所进行的工作除外；"+
+		"室内聚会人数不能超过30人，如果聚会中有未接种疫苗者，则不能超过10人。据悉，该措施将持续到明年1月24日。17日，"+
+		"瑞士新增新冠肺炎确诊病例9941例，目前该国累计有294例新冠肺炎患者在医院接受重症监护。瑞士政府担心，随着奥密克戎毒株的传播，"+
+		"医院重症监护病房可能会出现超负荷运转。", "blue")
 	addTestArticle("第二篇文章", "我和小丽是好朋友。", "white")
 	addTestArticle("第三篇文章", "太阳很晒。", "black")
 	GetArticles(c)
@@ -273,6 +286,7 @@ func addTestLookup(hanzi string, pinyin string, enLookup string, cnLookup string
 	fmt.Println(&lookups)
 }
 
+// BatchAddTestLookupData adds some test lookup data for testing
 // API: curl -X POST localhost:3456/batchAddLookup
 func BatchAddTestLookupData() {
 	addTestLookup("文章", "wen zhang", "article", "文章", 8)
