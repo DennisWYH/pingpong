@@ -29,7 +29,6 @@ type Lookup struct {
 	Hanzi     string
 	Pinyin    string
 	EnLookup  string
-	CnLookup  string
 	ArticleID int
 	Article   Article
 	gorm.Model
@@ -227,17 +226,27 @@ func AddArticleHandler(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	grade := c.PostForm("grade")
-	database.AddArticleTableEntry(title, content, grade)
+	articleID := database.AddArticleTableEntry(title, content, grade)
 
-	database.AddLookupTableEntry(hanzi, pinyin, enLookup, cnLookup, articleID)
+	hanzis := util.Tokenizer(content)
+
+	for _, hanzi := range hanzis {
+		pinyin := util.HanziToPinyins(hanzi)
+		enLookup := util.Cn_en_lookup(hanzi)[0]
+		database.AddLookupTableEntry(hanzi, pinyin, enLookup, articleID)
+	}
 
 	// display the article and the lookup in viewFocusedRead.templ
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 	var articles []Article
-	db.Find(&articles)
+	db.Where("ID", articleID).Find(&articles)
+
+	var lookups []Lookup
+	db.Where("article_id", articleID).Find(&lookups)
 
 	c.HTML(http.StatusCreated, "viewFocusedRead.tmpl", gin.H{
 		"articles": &articles,
+		"lookups":  &lookups,
 	})
 }
 
@@ -273,12 +282,11 @@ func BatchAddTestArticleDataHandler(c *gin.Context) {
 	GetArticlesHandler(c)
 }
 
-func addTestLookup(hanzi string, pinyin string, enLookup string, cnLookup string, articleID int) {
+func addTestLookup(hanzi string, pinyin string, enLookup string, articleID int) {
 	var newLookup Lookup
 	newLookup.Hanzi = hanzi
 	newLookup.Pinyin = pinyin
 	newLookup.EnLookup = enLookup
-	newLookup.CnLookup = cnLookup
 	newLookup.ArticleID = articleID
 
 	// Add the newLookup to the db Lookup table.
@@ -295,8 +303,8 @@ func addTestLookup(hanzi string, pinyin string, enLookup string, cnLookup string
 // BatchAddTestLookupData adds some test lookup data for testing
 // API: curl -X POST localhost:3456/batchAddLookup
 func BatchAddTestLookupData() {
-	addTestLookup("文章", "wen zhang", "article", "文章", 8)
-	addTestLookup("我", "wo", "me", "人称", 8)
-	addTestLookup("内容", "nei rong", "content", "文章的内容", 8)
+	addTestLookup("文章", "wen zhang", "article", 8)
+	addTestLookup("我", "wo", "me", 8)
+	addTestLookup("内容", "nei rong", "content", 8)
 	GetLookups()
 }

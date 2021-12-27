@@ -20,12 +20,11 @@ func AddArticleTableEntry(title, content, grade string) (articleID int) {
 }
 
 // AddLookupTableEntry adds a db entry to Lookup table and returns the primary key: ID
-func AddLookupTableEntry(hanzi, pinyin, enLookup, cnLookup string, articleID int) (lookupID int) {
+func AddLookupTableEntry(hanzi, pinyin, enLookup string, articleID int) (lookupID int) {
 	var newLookup api.Lookup
 	newLookup.Hanzi = hanzi
 	newLookup.Pinyin = pinyin
 	newLookup.EnLookup = enLookup
-	newLookup.CnLookup = cnLookup
 	newLookup.ArticleID = articleID
 
 	// Add the new article to the db table.

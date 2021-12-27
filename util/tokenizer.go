@@ -2,6 +2,7 @@ package util
 
 import "github.com/xujiajun/gotokenizer"
 
+// Tokenizer takes in a string of chinese and tokenize it into slice of strings
 func Tokenizer(text string) []string {
 	dictPath := "/Users/yunhaiwang/go/pkg/mod/github.com/xujiajun/gotokenizer@v1.1.0/data/zh/dict.txt"
 	// NewMaxMatch default wordFilter is NumAndLetterWordFilter
@@ -12,4 +13,3 @@ func Tokenizer(text string) []string {
 	tokenizedStrings, _ := mm.Get(text)
 	return tokenizedStrings
 }
-
