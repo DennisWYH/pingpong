@@ -193,7 +193,10 @@ func GetArticleByGradeHandler(c *gin.Context) {
 
 		hanzis = append(hanzis, content)
 		pinyins = append(pinyins, util.HanziToPinyins(content))
-		tokenizedContent := util.Tokenizer(content)
+		tokenizedContent, err := util.Tokenizer(content)
+		if err != nil {
+			c.Error(err)
+		}
 		tokenizedContents = append(tokenizedContents, tokenizedContent)
 		words = util.ExtractWords(tokenizedContent)
 
@@ -228,12 +231,26 @@ func AddArticleHandler(c *gin.Context) {
 	grade := c.PostForm("grade")
 	articleID := database.AddArticleTableEntry(title, content, grade)
 
-	hanzis := util.Tokenizer(content)
+	// for each article content, we first tokenize it
+	tokens, err := util.Tokenizer(content)
+	if err != nil {
+		c.Error(err)
+	}
 
-	for _, hanzi := range hanzis {
+	// for the tokens []string slice, get rid of the entries if they are symbols.
+	tokensWithoutSymbols := []string{}
+	for _, token := range tokens {
+		if !util.CheckIfSymbols(token) {
+			tokensWithoutSymbols = append(tokensWithoutSymbols, token)
+		}
+	}
+
+	// for each of the token (hanzi), we find out its pinyin and its enLookup
+	// then we save the lookup entry into lookup table
+	for _, hanzi := range tokensWithoutSymbols {
 		pinyin := util.HanziToPinyins(hanzi)
-		enLookup := util.Cn_en_lookup(hanzi)[0]
-		database.AddLookupTableEntry(hanzi, pinyin, enLookup, articleID)
+		firstEnLookup := util.Cn_en_lookup(hanzi)[0]
+		database.AddLookupTableEntry(hanzi, pinyin, firstEnLookup, articleID)
 	}
 
 	// display the article and the lookup in viewFocusedRead.templ

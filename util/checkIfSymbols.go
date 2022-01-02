@@ -20,7 +20,7 @@ func CheckIfSymbols(word string) bool {
 	case "&":
 		result = true
 	default:
-			result = false
+		result = false
 	}
 	return result
 }

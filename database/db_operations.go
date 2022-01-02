@@ -1,14 +1,34 @@
 package database
 
 import (
+	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"pingpong/api"
 )
+
+type Article struct {
+	Title   string
+	Content string
+	Grade   string
+	gorm.Model
+	//Tags          []string
+	//WordCount     int64
+	//NumberOfRead  int64
+	//NumberOfFlash int64
+}
+
+type Lookup struct {
+	Hanzi     string
+	Pinyin    string
+	EnLookup  string
+	ArticleID int
+	Article   Article
+	gorm.Model
+}
 
 // AddArticleTableEntry adds a db entry to Article table and returns the primary key: ID
 func AddArticleTableEntry(title, content, grade string) (articleID int) {
-	var newArticle api.Article
+	var newArticle Article
 	newArticle.Title = title
 	newArticle.Content = content
 	newArticle.Grade = grade
@@ -21,13 +41,13 @@ func AddArticleTableEntry(title, content, grade string) (articleID int) {
 
 // AddLookupTableEntry adds a db entry to Lookup table and returns the primary key: ID
 func AddLookupTableEntry(hanzi, pinyin, enLookup string, articleID int) (lookupID int) {
-	var newLookup api.Lookup
+	var newLookup Lookup
 	newLookup.Hanzi = hanzi
 	newLookup.Pinyin = pinyin
 	newLookup.EnLookup = enLookup
 	newLookup.ArticleID = articleID
 
-	// Add the new article to the db table.
+	// Add the new Lookup struct to the db table.
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 	db.Create(&newLookup)
 	return int(newLookup.ID)
@@ -40,12 +60,18 @@ func CreateDBTables() {
 		panic("failed to connect database")
 	}
 
-	var article *api.Article
-	db.AutoMigrate(&article)
+	var article *Article
+	err = db.AutoMigrate(&article)
+	if err != nil {
+		fmt.Println(err)
+	}
 	db.Create(&article)
 
 	// Some look up entries belong to an article
-	var lookup *api.Lookup
-	db.AutoMigrate(&lookup)
+	var lookup *Lookup
+	err = db.AutoMigrate(&lookup)
+	if err != nil {
+		fmt.Println(err)
+	}
 	db.Create(&lookup)
 }

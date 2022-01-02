@@ -44,5 +44,4 @@ func startRouting() {
 
 func main() {
 	startRouting()
-	//api.GetLookups()
 }
