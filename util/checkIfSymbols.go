@@ -19,6 +19,8 @@ func CheckIfSymbols(word string) bool {
 		result = true
 	case "&":
 		result = true
+	case "%":
+		result = true
 	default:
 		result = false
 	}

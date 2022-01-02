@@ -21,8 +21,8 @@ func startRouting() {
 
 	// get articles
 	router.GET("/articles", api.GetArticlesHandler)
-	router.GET("/focusedRead", api.GetFocusedArticlesHandler)
-	router.GET("/article/id/:id", api.GetArticleByIDHandler)
+	router.GET("/focusedRead/id/:articleID", api.GetFocusedArticlesHandler)
+	router.GET("/article/id/:articleID", api.GetArticleByIDHandler)
 	router.GET("/article/grade/:grade", api.GetArticleByGradeHandler)
 
 	// add articles
@@ -30,11 +30,11 @@ func startRouting() {
 	router.POST("/batchAddArticles", api.BatchAddTestArticleDataHandler)
 
 	// delete articles
-	router.DELETE("/article/id/:id", api.DeleteArticleByIDHandler)
+	router.DELETE("/article/id/:articleID", api.DeleteArticleByIDHandler)
 	router.DELETE("/articles", api.DeleteAllArticleHandler)
 
 	// update an artile
-	router.PUT("/update/article/id/:id", api.UpdateArticleByIDHandler)
+	router.PUT("/update/article/id/:articleID", api.UpdateArticleByIDHandler)
 
 	// serve static files
 	router.Static("./static", "./static")

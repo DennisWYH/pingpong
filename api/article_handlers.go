@@ -65,12 +65,12 @@ func GetLookups() {
 }
 
 // DeleteArticleByIDHandler deletes article given the article ID
-// API: curl -X DELETE localhost:3456/article/id/:id
+// API: curl -X DELETE localhost:3456/article/id/:articleID
 func DeleteArticleByIDHandler(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
 	var article *Article
-	id := c.Param("id")
+	id := c.Param("articleID")
 	intID, _ := strconv.Atoi(id)
 	db.Delete(&article, intID)
 
@@ -83,12 +83,14 @@ func DeleteArticleByIDHandler(c *gin.Context) {
 }
 
 // GetFocusedArticlesHandler handles the request and renders viewFocusedRead tmpl
-// API: curl localhost:3456/focusedRead
+// API: curl localhost:3456/focusedRead/id/:articleID
 func GetFocusedArticlesHandler(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
+	id := c.Param("articleID")
+	intID, _ := strconv.Atoi(id)
 
 	var article *Article
-	db.First(&article)
+	db.First(&article, "ID=?", intID)
 
 	var lookups []Lookup
 	var lookup *Lookup
@@ -143,7 +145,7 @@ func UpdateArticleByIDHandler(c *gin.Context) {
 // GetArticleByIDHanlder returns article given its ID
 // API: localhost:3456/article/id/:id
 func GetArticleByIDHandler(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("articleID")
 	intID, _ := strconv.Atoi(id)
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
 
@@ -202,7 +204,10 @@ func GetArticleByGradeHandler(c *gin.Context) {
 
 	}
 	for _, word := range words {
-		wordsEn := util.Cn_en_lookup(word)
+		wordsEn, err := util.Cn_en_lookup(word)
+		if err != nil {
+			fmt.Println("")
+		}
 		wordsEns = append(wordsEns, wordsEn)
 	}
 
@@ -217,15 +222,9 @@ func GetArticleByGradeHandler(c *gin.Context) {
 
 // AddArticleHandler addes entry to the article table as well as lookup table
 // API: curl -X POST -H "Content-Type: application/x-www-form-urlencoded"
-//  -d "title=new&content=entry" localhost:3456/addSimpleArticle
+//  -d "title=new&content=entry&grade=white" localhost:3456/addSimpleArticle
 // gin context documentation: https://pkg.go.dev/github.com/gin-gonic/gin#section-readme
 func AddArticleHandler(c *gin.Context) {
-	// Todo: the content from user input has to be chinese,
-	// for later pinyin convert.
-
-	// Todo: what if there are English words in the paragraph...
-	// solution: create a map, when English recognized, put blank in there or display english itself.
-
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	grade := c.PostForm("grade")
@@ -249,8 +248,13 @@ func AddArticleHandler(c *gin.Context) {
 	// then we save the lookup entry into lookup table
 	for _, hanzi := range tokensWithoutSymbols {
 		pinyin := util.HanziToPinyins(hanzi)
-		firstEnLookup := util.Cn_en_lookup(hanzi)[0]
-		database.AddLookupTableEntry(hanzi, pinyin, firstEnLookup, articleID)
+		enLookup, err := util.Cn_en_lookup(hanzi)
+		if err != nil {
+			fmt.Printf("error in cn_en lookup, there is no result in lookup %s", err)
+		} else {
+			firstEnLookup := enLookup[0]
+			database.AddLookupTableEntry(hanzi, pinyin, firstEnLookup, articleID)
+		}
 	}
 
 	// display the article and the lookup in viewFocusedRead.templ
