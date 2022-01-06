@@ -33,7 +33,7 @@ func startRouting() {
 	router.DELETE("/article/id/:articleID", api.DeleteArticleByIDHandler)
 	router.DELETE("/articles", api.DeleteAllArticleHandler)
 
-	// update an artile
+	// update an article
 	router.PUT("/update/article/id/:articleID", api.UpdateArticleByIDHandler)
 
 	// serve static files
@@ -44,4 +44,5 @@ func startRouting() {
 
 func main() {
 	startRouting()
+	//database.CreateDBTables()
 }

@@ -15,8 +15,9 @@
                 <div id="article-title" class="row">
                     {{ .article.Title }}
                 </div>
-                <div id="article-content" class="row">
-                    {{ .article.Content }}
+                <div id="article-tokens" class="row">
+                    {{.tokens }}
+                    {{.pinyins }}
                 </div>
                 <div id="row2col1row3" class="row">
                     <div id="row2col1row3col1" class="col col-2">
@@ -34,6 +35,7 @@
                  {{range .lookups}}
                     {{.Hanzi}}
                     {{.Pinyin}}
+                    {{.EnLookup}}
                      <br>
                  {{ end}}
             </div>

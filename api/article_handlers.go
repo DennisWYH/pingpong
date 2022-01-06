@@ -18,6 +18,8 @@ type Article struct {
 	Title   string
 	Content string
 	Grade   string
+	Tokens  string
+	Pinyins string
 	gorm.Model
 	//Tags          []string
 	//WordCount     int64
@@ -44,7 +46,7 @@ func GetArticlesHandler(c *gin.Context) {
 	db.Find(&articles)
 
 	//c.IndentedJSON(http.StatusOK, &articles)
-	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
 		"articles": &articles,
 	})
 }
@@ -77,12 +79,12 @@ func DeleteArticleByIDHandler(c *gin.Context) {
 	var articles *[]Article
 	db.Find(&articles)
 	c.IndentedJSON(http.StatusOK, &articles)
-	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
 		"articles": &articles,
 	})
 }
 
-// GetFocusedArticlesHandler handles the request and renders viewFocusedRead tmpl
+// GetFocusedArticlesHandler handles the request and renders viewFocusedRead html
 // API: curl localhost:3456/focusedRead/id/:articleID
 func GetFocusedArticlesHandler(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
@@ -93,14 +95,24 @@ func GetFocusedArticlesHandler(c *gin.Context) {
 	db.First(&article, "ID=?", intID)
 
 	var lookups []Lookup
-	var lookup *Lookup
-	fmt.Println("article ID is ", article.ID)
-	fmt.Println("the model of lookup table is, ", db.Model(&lookup))
+
 	db.Where("article_id = ?", article.ID).Find(&lookups)
 
-	fmt.Println("article lookup is", lookups)
-
-	c.HTML(http.StatusOK, "viewFocusedRead.tmpl", gin.H{
+	tokensString := article.Tokens
+	pinyinsString := article.Pinyins
+	tokensSlice := util.StringToSlice(tokensString)
+	pinyinsSlice := util.StringToSlice(pinyinsString)
+	//tokenPinyinSlice := [][]string{}
+	//for i := 0; i < len(tokensSlice); i++ {
+	//	tokenPinyin := []string{}
+	//	tokenPinyin[0] = tokensSlice[i]
+	//	tokenPinyin[1] = pinyinsSlice[i]
+	//	fmt.Println("tokenPinyin is", tokenPinyin)
+	//	tokenPinyinSlice[i] = tokenPinyin
+	//}
+	c.HTML(http.StatusOK, "viewFocusedRead.html", gin.H{
+		"tokens":  tokensSlice,
+		"pinyins": pinyinsSlice,
 		"article": &article,
 		"lookups": &lookups,
 	})
@@ -137,7 +149,7 @@ func UpdateArticleByIDHandler(c *gin.Context) {
 	db.Save(&article)
 
 	c.IndentedJSON(http.StatusOK, &article)
-	c.HTML(http.StatusOK, "viewArticles.tmpl", gin.H{
+	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
 		"articles": &article,
 	})
 }
@@ -168,7 +180,7 @@ func GetArticleByIDHandler(c *gin.Context) {
 		hanziPinyins[key] = value
 	}
 
-	c.HTML(http.StatusOK, "viewArticleById.tmpl", gin.H{
+	c.HTML(http.StatusOK, "viewArticleById.html", gin.H{
 		"hanzi":        content,
 		"hanziPinyins": hanziPinyins,
 	})
@@ -211,13 +223,22 @@ func GetArticleByGradeHandler(c *gin.Context) {
 		wordsEns = append(wordsEns, wordsEn)
 	}
 
-	c.HTML(http.StatusOK, "viewArticleByGrade.tmpl", gin.H{
+	c.HTML(http.StatusOK, "viewArticleByGrade.html", gin.H{
 		"hanzis":            hanzis,
 		"pinyins":           pinyins,
 		"tokenizedContents": tokenizedContents,
 		"words":             words,
 		"wordsEns":          wordsEns,
 	})
+}
+
+func Tokens_to_pinyins(tokens []string) []string {
+	var pinyins []string
+	for _, val := range tokens {
+		pinyin := util.HanziToPinyins(val)
+		pinyins = append(pinyins, pinyin)
+	}
+	return pinyins
 }
 
 // AddArticleHandler addes entry to the article table as well as lookup table
@@ -228,13 +249,17 @@ func AddArticleHandler(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	grade := c.PostForm("grade")
-	articleID := database.AddArticleTableEntry(title, content, grade)
 
 	// for each article content, we first tokenize it
 	tokens, err := util.Tokenizer(content)
 	if err != nil {
-		c.Error(err)
+		fmt.Print("There is an error in tokenizing the article content", err)
 	}
+
+	pinyins := Tokens_to_pinyins(tokens)
+	tokensString := strings.Join(tokens, ",")
+	pinyinsString := strings.Join(pinyins, ",")
+	articleID := database.AddArticleTableEntry(title, content, grade, tokensString, pinyinsString)
 
 	// for the tokens []string slice, get rid of the entries if they are symbols.
 	tokensWithoutSymbols := []string{}
@@ -265,7 +290,7 @@ func AddArticleHandler(c *gin.Context) {
 	var lookups []Lookup
 	db.Where("article_id", articleID).Find(&lookups)
 
-	c.HTML(http.StatusCreated, "viewFocusedRead.tmpl", gin.H{
+	c.HTML(http.StatusCreated, "viewFocusedRead.html", gin.H{
 		"articles": &articles,
 		"lookups":  &lookups,
 	})
