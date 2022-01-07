@@ -19,6 +19,9 @@ func startRouting() {
 	router := gin.Default()
 	router.LoadHTMLGlob("static/templates/*")
 
+	// design previews
+	router.GET("/design1", api.GetDesign1Handler)
+
 	// get articles
 	router.GET("/articles", api.GetArticlesHandler)
 	router.GET("/focusedRead/id/:articleID", api.GetFocusedArticlesHandler)
