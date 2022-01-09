@@ -3,14 +3,12 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mozillazg/go-pinyin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
 	"pingpong/database"
 	"pingpong/util"
 	"strconv"
-	"strings"
 )
 
 type Article struct {
@@ -35,36 +33,6 @@ type Lookup struct {
 	gorm.Model
 }
 
-// GetArticlesHandler returns all the articles in the Article table
-// API: curl localhost:3456/articles
-func GetArticlesHandler(c *gin.Context) {
-
-	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-
-	var articles []Article
-	db.Find(&articles)
-
-	//c.IndentedJSON(http.StatusOK, &articles)
-	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
-		"articles": &articles,
-	})
-}
-
-// GetLookups returns all the lookups data in the Lookup table
-// API: curl localhost:3456/lookups
-func GetLookups() {
-
-	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-
-	var lookups []Lookup
-	db.Find(&lookups)
-
-	for _, lookup := range lookups {
-		fmt.Println("article id = ", lookup.ArticleID)
-		fmt.Println("article Hanzi = ", lookup.Hanzi)
-	}
-}
-
 // DeleteArticleByIDHandler deletes article given the article ID
 // API: curl -X DELETE localhost:3456/article/id/:articleID
 func DeleteArticleByIDHandler(c *gin.Context) {
@@ -78,38 +46,6 @@ func DeleteArticleByIDHandler(c *gin.Context) {
 	var articles *[]Article
 	db.Find(&articles)
 	c.IndentedJSON(http.StatusOK, &articles)
-	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
-		"articles": &articles,
-	})
-}
-
-// GetFocusedArticlesHandler handles the request and renders viewFocusedRead html
-// API: curl localhost:3456/focusedRead/id/:articleID
-func GetFocusedArticlesHandler(c *gin.Context) {
-	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-	id := c.Param("articleID")
-	intID, _ := strconv.Atoi(id)
-
-	var article *Article
-	db.First(&article, "ID=?", intID)
-
-	var lookups []Lookup
-	db.Where("article_id = ?", article.ID).Find(&lookups)
-
-	// for each article content, we first tokenize it
-	tokens, err := util.Tokenizer(article.Content)
-	pinyins := Tokens_to_pinyins(tokens)
-
-	if err != nil {
-		fmt.Print("There is an error in tokenizing the article content", err)
-	}
-
-	c.HTML(http.StatusOK, "viewFocusedRead.html", gin.H{
-		"tokens":  tokens,
-		"pinyins": pinyins,
-		"article": &article,
-		"lookups": &lookups,
-	})
 }
 
 // DeleteAllArticleHandler deletes all articles for testing purpose
@@ -123,9 +59,6 @@ func DeleteAllArticleHandler(c *gin.Context) {
 
 	// delete
 	db.Delete(&articles)
-
-	// get all articles to see if there is articles left in the db.
-	GetArticlesHandler(c)
 }
 
 // UpdateArticleByIDHandler updates an article given its ID
@@ -143,9 +76,6 @@ func UpdateArticleByIDHandler(c *gin.Context) {
 	db.Save(&article)
 
 	c.IndentedJSON(http.StatusOK, &article)
-	c.HTML(http.StatusOK, "viewArticles.html", gin.H{
-		"articles": &article,
-	})
 }
 
 // GetArticleByIDHanlder returns article given its ID
@@ -158,26 +88,7 @@ func GetArticleByIDHandler(c *gin.Context) {
 	var article *Article
 	db.First(&article, "ID=?", intID)
 
-	articleStruct := *article
-	content := articleStruct.Content
-	a := pinyin.NewArgs()
-	a.Style = pinyin.Tone
-	contentPinyins := pinyin.Pinyin(content, a)
-	fmt.Println("pin yin is ", contentPinyins)
-
-	slicedContent := strings.Split(content, "")
-
-	hanziPinyins := make(map[string][]string)
-	for i := 0; i < len(slicedContent); i++ {
-		key := slicedContent[i]
-		value := contentPinyins[i]
-		hanziPinyins[key] = value
-	}
-
-	c.HTML(http.StatusOK, "viewArticleById.html", gin.H{
-		"hanzi":        content,
-		"hanziPinyins": hanziPinyins,
-	})
+	c.IndentedJSON(http.StatusOK, &article)
 }
 
 // GetArticleByGradeHandler returns the articles given by the grade
@@ -189,41 +100,7 @@ func GetArticleByGradeHandler(c *gin.Context) {
 	var articles *[]Article
 	db.Find(&articles, "Grade=?", grade)
 
-	var hanzis []string
-	var pinyins []string
-	var tokenizedContents [][]string
-	var words []string
-	var wordsEns [][]string
-
-	for _, article := range *articles {
-		articleStruct := article
-		content := articleStruct.Content
-
-		hanzis = append(hanzis, content)
-		pinyins = append(pinyins, util.HanziToPinyins(content))
-		tokenizedContent, err := util.Tokenizer(content)
-		if err != nil {
-			c.Error(err)
-		}
-		tokenizedContents = append(tokenizedContents, tokenizedContent)
-		words = util.ExtractWords(tokenizedContent)
-
-	}
-	for _, word := range words {
-		wordsEn, err := util.Cn_en_lookup(word)
-		if err != nil {
-			fmt.Println("")
-		}
-		wordsEns = append(wordsEns, wordsEn)
-	}
-
-	c.HTML(http.StatusOK, "viewArticleByGrade.html", gin.H{
-		"hanzis":            hanzis,
-		"pinyins":           pinyins,
-		"tokenizedContents": tokenizedContents,
-		"words":             words,
-		"wordsEns":          wordsEns,
-	})
+	c.IndentedJSON(http.StatusOK, &articles)
 }
 
 func Tokens_to_pinyins(tokens []string) []string {

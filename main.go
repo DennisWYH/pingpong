@@ -36,7 +36,6 @@ func startRouting() {
 	router.GET("/design1", api.GetDesign1Handler)
 
 	// get articles
-	router.GET("/articles", api.GetArticlesHandler)
 	router.GET("/focusedRead/id/:articleID", api.GetFocusedArticlesHandler)
 	router.GET("/article/id/:articleID", api.GetArticleByIDHandler)
 	router.GET("/article/grade/:grade", api.GetArticleByGradeHandler)
