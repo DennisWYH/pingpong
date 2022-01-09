@@ -7,7 +7,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/http"
-	"net/url"
 	"pingpong/database"
 	"pingpong/util"
 	"strconv"
@@ -95,24 +94,19 @@ func GetFocusedArticlesHandler(c *gin.Context) {
 	db.First(&article, "ID=?", intID)
 
 	var lookups []Lookup
-
 	db.Where("article_id = ?", article.ID).Find(&lookups)
 
-	tokensString := article.Tokens
-	pinyinsString := article.Pinyins
-	tokensSlice := util.StringToSlice(tokensString)
-	pinyinsSlice := util.StringToSlice(pinyinsString)
-	//tokenPinyinSlice := [][]string{}
-	//for i := 0; i < len(tokensSlice); i++ {
-	//	tokenPinyin := []string{}
-	//	tokenPinyin[0] = tokensSlice[i]
-	//	tokenPinyin[1] = pinyinsSlice[i]
-	//	fmt.Println("tokenPinyin is", tokenPinyin)
-	//	tokenPinyinSlice[i] = tokenPinyin
-	//}
+	// for each article content, we first tokenize it
+	tokens, err := util.Tokenizer(article.Content)
+	pinyins := Tokens_to_pinyins(tokens)
+
+	if err != nil {
+		fmt.Print("There is an error in tokenizing the article content", err)
+	}
+
 	c.HTML(http.StatusOK, "viewFocusedRead.html", gin.H{
-		"tokens":  tokensSlice,
-		"pinyins": pinyinsSlice,
+		"tokens":  tokens,
+		"pinyins": pinyins,
 		"article": &article,
 		"lookups": &lookups,
 	})
@@ -256,10 +250,7 @@ func AddArticleHandler(c *gin.Context) {
 		fmt.Print("There is an error in tokenizing the article content", err)
 	}
 
-	pinyins := Tokens_to_pinyins(tokens)
-	tokensString := strings.Join(tokens, ",")
-	pinyinsString := strings.Join(pinyins, ",")
-	articleID := database.AddArticleTableEntry(title, content, grade, tokensString, pinyinsString)
+	articleID := database.AddArticleTableEntry(title, content, grade)
 
 	// for the tokens []string slice, get rid of the entries if they are symbols.
 	tokensWithoutSymbols := []string{}
@@ -274,83 +265,25 @@ func AddArticleHandler(c *gin.Context) {
 	for _, hanzi := range tokensWithoutSymbols {
 		pinyin := util.HanziToPinyins(hanzi)
 		enLookup, err := util.Cn_en_lookup(hanzi)
-		if err != nil {
-			fmt.Printf("error in cn_en lookup, there is no result in lookup %s", err)
-		} else {
+		if err == nil {
 			firstEnLookup := enLookup[0]
 			database.AddLookupTableEntry(hanzi, pinyin, firstEnLookup, articleID)
 		}
 	}
-
 	// display the article and the lookup in viewFocusedRead.templ
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-	var articles []Article
-	db.Where("ID", articleID).Find(&articles)
+	var article Article
+	db.Where("ID", articleID).Find(&article)
 
 	var lookups []Lookup
 	db.Where("article_id", articleID).Find(&lookups)
 
+	pinyins := Tokens_to_pinyins(tokens)
+
 	c.HTML(http.StatusCreated, "viewFocusedRead.html", gin.H{
-		"articles": &articles,
+		"articles": &article,
 		"lookups":  &lookups,
+		"tokens":   tokens,
+		"pinyins":  pinyins,
 	})
-}
-
-func addTestArticle(title, content, grade string) {
-	requestURL := "http://localhost:3456/addSimpleArticle"
-	requestForm := url.Values{}
-	requestForm.Add("title", title)
-	requestForm.Add("content", content)
-	requestForm.Add("grade", grade)
-	req, err := http.NewRequest(http.MethodPost, requestURL, strings.NewReader(requestForm.Encode()))
-	if err != nil {
-		fmt.Println("BatchAddTestArticleData Error in request:", err)
-		return
-	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-}
-
-// BatchAddTestArticleDataHandler adds some test articles for testing
-// API: curl -X POST localhost:3456/batchAddArticles
-func BatchAddTestArticleDataHandler(c *gin.Context) {
-	addTestArticle("第一篇文章", "瑞士政府当地时间17日宣布新的防疫措施，以应对目前严峻的新冠肺炎疫情形势。从本月20日起，"+
-		"未接种疫苗者将不能进入餐馆、酒吧以及文化、体育、休闲等室内公共活动场所；恢复所有人在家工作的要求，一些必须到工作场所进行的工作除外；"+
-		"室内聚会人数不能超过30人，如果聚会中有未接种疫苗者，则不能超过10人。据悉，该措施将持续到明年1月24日。17日，"+
-		"瑞士新增新冠肺炎确诊病例9941例，目前该国累计有294例新冠肺炎患者在医院接受重症监护。瑞士政府担心，随着奥密克戎毒株的传播，"+
-		"医院重症监护病房可能会出现超负荷运转。", "blue")
-	addTestArticle("第二篇文章", "我和小丽是好朋友。", "white")
-	addTestArticle("第三篇文章", "太阳很晒。", "black")
-	GetArticlesHandler(c)
-}
-
-func addTestLookup(hanzi string, pinyin string, enLookup string, articleID int) {
-	var newLookup Lookup
-	newLookup.Hanzi = hanzi
-	newLookup.Pinyin = pinyin
-	newLookup.EnLookup = enLookup
-	newLookup.ArticleID = articleID
-
-	// Add the newLookup to the db Lookup table.
-	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-	db.Create(&newLookup)
-
-	// show the article table after adding an entry
-	var lookups []Lookup
-	db.Find(&lookups)
-
-	fmt.Println(&lookups)
-}
-
-// BatchAddTestLookupData adds some test lookup data for testing
-// API: curl -X POST localhost:3456/batchAddLookup
-func BatchAddTestLookupData() {
-	addTestLookup("文章", "wen zhang", "article", 8)
-	addTestLookup("我", "wo", "me", 8)
-	addTestLookup("内容", "nei rong", "content", 8)
-	GetLookups()
 }

@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"html/template"
 	"pingpong/api"
+	"strconv"
 )
 
 type Word struct {
@@ -15,8 +17,19 @@ type Word struct {
 	More        string `json:"more"`
 }
 
+func castInt(val string) (int, error) {
+	return strconv.Atoi(val)
+}
+func getValueAtIndex(val []string, index int) string {
+	return val[index]
+}
+
 func startRouting() {
 	router := gin.Default()
+	router.SetFuncMap(template.FuncMap{
+		"castInt":         castInt,
+		"getValueAtIndex": getValueAtIndex,
+	})
 	router.LoadHTMLGlob("static/templates/*")
 
 	// design previews
@@ -30,7 +43,6 @@ func startRouting() {
 
 	// add articles
 	router.POST("/addSimpleArticle", api.AddArticleHandler)
-	router.POST("/batchAddArticles", api.BatchAddTestArticleDataHandler)
 
 	// delete articles
 	router.DELETE("/article/id/:articleID", api.DeleteArticleByIDHandler)

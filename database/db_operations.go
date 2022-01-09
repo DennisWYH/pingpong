@@ -29,13 +29,11 @@ type Lookup struct {
 }
 
 // AddArticleTableEntry adds a db entry to Article table and returns the primary key: ID
-func AddArticleTableEntry(title, content, grade string, tokens, pinyins string) (articleID int) {
+func AddArticleTableEntry(title, content, grade string) (articleID int) {
 	var newArticle Article
 	newArticle.Title = title
 	newArticle.Content = content
 	newArticle.Grade = grade
-	newArticle.Tokens = tokens
-	newArticle.Pinyins = pinyins
 
 	// Add the new article to the db table.
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})

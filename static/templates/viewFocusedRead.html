@@ -15,9 +15,18 @@
                 <div class="row" id="article-title">
                     {{ .article.Title }}
                 </div>
+                {{$pinyins := .pinyins}}
+                {{$tokens := .tokens}}
                 <div class="row" id="article-tokens">
-                    {{ .tokens }}
-                    {{ .pinyins }}
+                    <p> {{ range $key, $value := $tokens }}
+                        <ruby style="display:inline;">
+                            {{ $value}}
+                            <rp>(</rp>
+                            <rt>{{ index $pinyins $key }}</rt>
+                            <rp>)</rp>
+                        </ruby>
+                        {{ end }}
+                    </p>
                 </div>
                 <div class="row" id="row2col1row3">
                     <div class="col col-2" id="row2col1row3col1">

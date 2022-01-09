@@ -6,43 +6,39 @@
 }
 
 body {
-    background-color: #ededf0;
+    background-color: white;
 }
 
 #row1 {
-    background-color: yellow;
+    background-color: white;
     height: 40px;
     width: 1200px;
 }
 
 #row2 {
-    background-color: orange;
+    background-color: white;
     height: 600px;
     width: 1200px;
 }
 
 #row2col1 {
-    background-color: cadetblue;
+    background-color: white;
     width: 400px;
 }
 
 #id {
-    background-color: cadetblue;
+    background-color: white;
     width: 400px;
 }
 
 #article-content {
-    background-color: yellow;
+    background-color: white;
     height: 400px;
 }
 
 #row2col1row3 {
-    background-color: greenyellow;
+    background-color: white;
     height: 100px;
-}
-
-#row2col1row3col1 {
-
 }
 
 #arrow-previous {
@@ -52,11 +48,11 @@ body {
 }
 
 #place-holder {
-    background-color: blue;
+    background-color: white;
 }
 
 #row2col1row3col3 {
-    background-color: palevioletred;
+    background-color: white;
 }
 
 #arrow-next {
@@ -65,5 +61,5 @@ body {
 }
 
 #row2col2 {
-    background-color: antiquewhite;
+    background-color: white;
 }
