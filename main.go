@@ -23,12 +23,24 @@ func castInt(val string) (int, error) {
 func getValueAtIndex(val []string, index int) string {
 	return val[index]
 }
+func getFirst160(val string) string {
+	return val[:160]
+}
+func lenBiggerThan160(val string) bool {
+	if len(val) > 160 {
+		return true
+	} else {
+		return false
+	}
+}
 
 func startRouting() {
 	router := gin.Default()
 	router.SetFuncMap(template.FuncMap{
-		"castInt":         castInt,
-		"getValueAtIndex": getValueAtIndex,
+		"castInt":          castInt,
+		"getValueAtIndex":  getValueAtIndex,
+		"getFirst160":      getFirst160,
+		"lenBiggerThan160": lenBiggerThan160,
 	})
 	router.LoadHTMLGlob("static/templates/*")
 
@@ -36,6 +48,7 @@ func startRouting() {
 	router.GET("/design1", api.GetDesign1Handler)
 
 	// get articles
+	router.GET("/articles", api.GetArticlesHandler)
 	router.GET("/focusedRead/id/:articleID", api.GetFocusedArticlesHandler)
 	router.GET("/article/id/:articleID", api.GetArticleByIDHandler)
 	router.GET("/article/grade/:grade", api.GetArticleByGradeHandler)

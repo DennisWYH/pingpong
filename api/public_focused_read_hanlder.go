@@ -31,7 +31,7 @@ func GetFocusedArticlesHandler(c *gin.Context) {
 		fmt.Print("There is an error in tokenizing the article content", err)
 	}
 
-	c.HTML(http.StatusOK, "viewFocusedRead.html", gin.H{
+	c.HTML(http.StatusOK, "design1.html", gin.H{
 		"tokens":  tokens,
 		"pinyins": pinyins,
 		"article": &article,
