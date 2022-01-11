@@ -9,7 +9,6 @@ import (
 
 func GetArticlesHandler(c *gin.Context) {
 	db, _ := gorm.Open(sqlite.Open("pingpong.db"), &gorm.Config{})
-
 	var articles []Article
 	db.Find(&articles)
 
