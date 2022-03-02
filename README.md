@@ -16,3 +16,5 @@ Why building this website:
 1. Continuoues input of a foreigner language with really handy dictionary feature by the side has always been a dream for my own language leanring journey. This website is initially inpired by my own desire.
 2. A book called "Second Language Acquisition" by Stephen Krashen is the theory behind the usefulness of this website. In short, it talks about language learners should be continuouesly given input of materials slightly above his current level so that the learner can progress. I have read it a couple of years ago and fully agree with the book. You might be interested in searching and reading it as well.
 
+# Ideas
+# 中文网络用语查询
