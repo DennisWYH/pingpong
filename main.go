@@ -12,7 +12,7 @@ func main() {
 		fmt.Fprintf(w, "Hello, World!")
 	})
 	http.HandleFunc("/helloworld", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, World!")
+		w.Write([]byte("hello.world"))
 	})
 
 	// Read this on heroku dynamic port number
