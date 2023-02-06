@@ -2,6 +2,6 @@
 English:\
 Docker based Golang web app with features helping Chinese-as-second-language learner
 
-Chinese:\ 
+Chinese:\
 使用Docker 封装\
 Golang 开发后端的中文二外学习网站。
