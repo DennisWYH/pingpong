@@ -7,21 +7,33 @@ import (
 	"os"
 )
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func main() {
 	// APIs for frontend actions
 	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
 		fmt.Fprintf(w, "Hello, World!")
 	})
 	http.HandleFunc("/previous", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
 		fmt.Fprintf(w, "Hello, World!")
 	})
 	http.HandleFunc("/helloworld", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
 		w.Write([]byte("hello.world"))
 	})
 
 	// APIs for database CRUD management
-	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
 		w.Write([]byte("this page displays a form where user can add sentences"))
+	})
+	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		w.Write([]byte("adds a sentence"))
 	})
 
 	//http.HandleFunc("/remove-sentence", func(w http.ResponseWriter, r *http.Request) {
