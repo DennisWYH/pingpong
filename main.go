@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gorm.io/driver/sqlite" // Sqlite driver based on GGO
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -44,8 +44,9 @@ func main() {
 	})
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		// github.com/mattn/go-sqlite3
-		db, err := gorm.Open(sqlite.Open("chinese_sentence.db"), &gorm.Config{})
+		// gorm postgres driver
+		dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			panic("failed to connect database")
 		}
@@ -68,8 +69,8 @@ func main() {
 
 	http.HandleFunc("/list-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		// github.com/mattn/go-sqlite3
-		db, err := gorm.Open(sqlite.Open("chinese_sentence.db"), &gorm.Config{})
+		dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			panic("failed to connect database")
 		}
