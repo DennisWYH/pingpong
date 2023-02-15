@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
-	"os"
 )
 
 func enableCors(w *http.ResponseWriter) {
@@ -45,19 +45,21 @@ func main() {
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		// gorm postgres driver
-		dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+		dsn := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			panic("failed to connect database")
 		}
 		// Migrate the schema
+		// Use pq package for array support in the db field
+		// https://stackoverflow.com/questions/63256680/adding-an-array-of-integers-as-a-data-type-in-a-gorm-model
 		type ChineseSentence struct {
 			gorm.Model
 			difficultyLevel int
 			Chinese         string
 			English         string
 			Pinyin          string
-			PinyinSlice     []string
+			PinyinSlice     pq.StringArray
 		}
 
 		db.AutoMigrate(&ChineseSentence{})
@@ -69,7 +71,7 @@ func main() {
 
 	http.HandleFunc("/list-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+		dsn := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			panic("failed to connect database")
@@ -85,8 +87,11 @@ func main() {
 
 	// Read this on heroku dynamic port number
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
-	port := os.Getenv("PORT")
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	//port := os.Getenv("PORT")
+	//if err := http.ListenAndServe(":"+port, nil); err != nil {
+	//	log.Fatal(err)
+	//}
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
 }
