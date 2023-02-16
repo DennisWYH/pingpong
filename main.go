@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -20,6 +21,38 @@ type ChineseSentence struct {
 	English         string
 	Pinyin          string
 	PinyinSlice     []string
+}
+
+func migrateDBScheme() (db *gorm.DB) {
+	// gorm postgres driver
+	dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// Migrate the schema
+	// Use pq package for array support in the db field
+	// https://stackoverflow.com/questions/63256680/adding-an-array-of-integers-as-a-data-type-in-a-gorm-model
+	type ChineseSentence struct {
+		gorm.Model
+		difficultyLevel int
+		Chinese         string
+		English         string
+		Pinyin          string
+		PinyinSlice     pq.StringArray `gorm:"type:text[]"`
+	}
+	db.AutoMigrate(&ChineseSentence{})
+	return db
+}
+
+func openAndConnectToDB() (db *gorm.DB) {
+	// gorm postgres driver
+	dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	return db
 }
 
 func main() {
@@ -44,42 +77,35 @@ func main() {
 	})
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		// gorm postgres driver
-		dsn := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
-		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			panic("failed to connect database")
-		}
-		// Migrate the schema
-		// Use pq package for array support in the db field
-		// https://stackoverflow.com/questions/63256680/adding-an-array-of-integers-as-a-data-type-in-a-gorm-model
-		type ChineseSentence struct {
-			gorm.Model
-			difficultyLevel int
-			Chinese         string
-			English         string
-			Pinyin          string
-			PinyinSlice     pq.StringArray
-		}
-
-		db.AutoMigrate(&ChineseSentence{})
+		db := openAndConnectToDB()
 		// Create
-		db.Create(&ChineseSentence{difficultyLevel: 1, Chinese: "中文第一课", English: "First Chinese lesson",
+		db.Create(&ChineseSentence{difficultyLevel: 1, Chinese: "中文第二课", English: "First Chinese lesson",
 			Pinyin: "zhong wen di yi ke", PinyinSlice: []string{"zhong", "wen", "di", "yi", "ke"}})
 		w.Write([]byte("added sentence"))
 	})
 
 	http.HandleFunc("/list-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		dsn := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
-		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			panic("failed to connect database")
+		db := openAndConnectToDB()
+		type ChineseSentence struct {
+			gorm.Model
+			difficultyLevel int
+			Chinese         string
+			English         string
+			Pinyin          string
+			PinyinSlice     pq.StringArray `gorm:"type:text[]"`
 		}
-		var chineseSentence ChineseSentence
-		db.First(&chineseSentence, 1) // find chinese sentence with integer primary key
-
-		w.Write([]byte(chineseSentence.Chinese))
+		chineseSentences := &[]ChineseSentence{}
+		//db.First(&chineseSentence)
+		db.Find(&chineseSentences)
+		// Response with json
+		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
+		w.Header().Set("Content-Type", "application/json")
+		data, err := json.Marshal(&chineseSentences)
+		if err != nil {
+			panic("json failed to marshal data")
+		}
+		w.Write(data)
 	})
 	//http.HandleFunc("/remove-sentence", func(w http.ResponseWriter, r *http.Request) {
 	//	w.Write([]byte("hello.world"))
