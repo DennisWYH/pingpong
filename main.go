@@ -62,21 +62,80 @@ func validateSentenceData(data ChineseSentence) {
 }
 
 func main() {
-	// APIs for frontend actions
-	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
+	// APIs for webinterface
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		fmt.Fprintf(w, "Hello, World!")
-	})
-	http.HandleFunc("/previous", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
-		fmt.Fprintf(w, "Hello, World!")
-	})
-	http.HandleFunc("/helloworld", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
-		w.Write([]byte("hello.world"))
+		db := openAndConnectToDB()
+		type ChineseSentence struct {
+			gorm.Model
+			DifficultyLevel    int
+			Chinese            string
+			EnglishTranslation string
+			Pinyin             string
+			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
+		}
+		chineseSentence := &ChineseSentence{}
+		// Get one record, no specified order
+		db.Take(&chineseSentence)
+		// SELECT * FROM users LIMIT 1;		// Response with json
+		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
+		w.Header().Set("Content-Type", "application/json")
+		marshaledData, err := json.Marshal(&chineseSentence)
+		if err != nil {
+			panic("json failed to marshal data")
+		}
+		w.Write(marshaledData)
 	})
 
-	// APIs for database CRUD management
+	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		db := openAndConnectToDB()
+		type ChineseSentence struct {
+			gorm.Model
+			DifficultyLevel    int
+			Chinese            string
+			EnglishTranslation string
+			Pinyin             string
+			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
+		}
+		chineseSentence := &ChineseSentence{}
+		// Get one record, no specified order
+		db.Take(&chineseSentence)
+		// SELECT * FROM users LIMIT 1;		// Response with json
+		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
+		w.Header().Set("Content-Type", "application/json")
+		marshaledData, err := json.Marshal(&chineseSentence)
+		if err != nil {
+			panic("json failed to marshal data")
+		}
+		w.Write(marshaledData)
+	})
+
+	http.HandleFunc("/previous", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		db := openAndConnectToDB()
+		type ChineseSentence struct {
+			gorm.Model
+			DifficultyLevel    int
+			Chinese            string
+			EnglishTranslation string
+			Pinyin             string
+			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
+		}
+		chineseSentence := &ChineseSentence{}
+		// Get one record, no specified order
+		db.Take(&chineseSentence)
+		// SELECT * FROM users LIMIT 1;		// Response with json
+		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
+		w.Header().Set("Content-Type", "application/json")
+		marshaledData, err := json.Marshal(&chineseSentence)
+		if err != nil {
+			panic("json failed to marshal data")
+		}
+		w.Write(marshaledData)
+	})
+
+	// APIs for database Admin CRUD management
 	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		w.Write([]byte("this page displays a form where user can add sentences"))
