@@ -14,6 +14,7 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 type ChineseSentence struct {
+	Id uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 	gorm.Model
 	DifficultyLevel    int
 	Chinese            string
@@ -92,21 +93,25 @@ func main() {
 	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		db := openAndConnectToDB()
-		var data ChineseSentence
-		if r.Body != nil {
-			decoder := json.NewDecoder(r.Body)
-			err := decoder.Decode(&data)
-			if err != nil {
-				fmt.Println("an error has occured while decoding request body: ", err)
-			}
-			fmt.Println("The data decoded from http request body is:", data)
+		type ChineseSentence struct {
+			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
+			gorm.Model
+			DifficultyLevel    int
+			Chinese            string
+			EnglishTranslation string
+			Pinyin             string
+			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
 		}
+		chineseSentence := &ChineseSentence{}
+		id := r.URL.Query().Get("id")
+		fmt.Println("Next handler, the id received is: ", id)
 		// Get one record
-		db.First(&data, data.ID+1)
+		db.First(&chineseSentence, id)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
-		marshaledData, err := json.Marshal(&data)
+		fmt.Println("The data received from db is: ", &chineseSentence.Chinese)
+		marshaledData, err := json.Marshal(&chineseSentence)
 		if err != nil {
 			panic("json failed to marshal data")
 		}
@@ -117,16 +122,10 @@ func main() {
 		enableCors(&w)
 		db := openAndConnectToDB()
 		var data ChineseSentence
-		if r.Body != nil {
-			decoder := json.NewDecoder(r.Body)
-			err := decoder.Decode(&data)
-			if err != nil {
-				fmt.Println("an error has occured while decoding request body: ", err)
-			}
-			fmt.Println("The data decoded from http request body is:", data)
-		}
+		id := r.URL.Query().Get("id")
+		fmt.Println("Previous handler, the id received is: ", id)
 		// Get one record
-		db.First(&data, data.ID-1)
+		db.First(&data, id)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
