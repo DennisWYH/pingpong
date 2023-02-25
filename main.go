@@ -33,6 +33,7 @@ func migrateDBScheme() (db *gorm.DB) {
 	// Use pq package for array support in the db field
 	// https://stackoverflow.com/questions/63256680/adding-an-array-of-integers-as-a-data-type-in-a-gorm-model
 	type ChineseSentence struct {
+		Id uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 		gorm.Model
 		DifficultyLevel    int
 		Chinese            string
@@ -67,6 +68,7 @@ func main() {
 		enableCors(&w)
 		db := openAndConnectToDB()
 		type ChineseSentence struct {
+			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 			gorm.Model
 			DifficultyLevel    int
 			Chinese            string
@@ -90,21 +92,21 @@ func main() {
 	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		db := openAndConnectToDB()
-		type ChineseSentence struct {
-			gorm.Model
-			DifficultyLevel    int
-			Chinese            string
-			EnglishTranslation string
-			Pinyin             string
-			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
+		var data ChineseSentence
+		if r.Body != nil {
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&data)
+			if err != nil {
+				fmt.Println("an error has occured while decoding request body: ", err)
+			}
+			fmt.Println("The data decoded from http request body is:", data)
 		}
-		chineseSentence := &ChineseSentence{}
-		// Get one record, no specified order
-		db.Take(&chineseSentence)
+		// Get one record
+		db.First(&data, data.ID+1)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
-		marshaledData, err := json.Marshal(&chineseSentence)
+		marshaledData, err := json.Marshal(&data)
 		if err != nil {
 			panic("json failed to marshal data")
 		}
@@ -114,21 +116,21 @@ func main() {
 	http.HandleFunc("/previous", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		db := openAndConnectToDB()
-		type ChineseSentence struct {
-			gorm.Model
-			DifficultyLevel    int
-			Chinese            string
-			EnglishTranslation string
-			Pinyin             string
-			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
+		var data ChineseSentence
+		if r.Body != nil {
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&data)
+			if err != nil {
+				fmt.Println("an error has occured while decoding request body: ", err)
+			}
+			fmt.Println("The data decoded from http request body is:", data)
 		}
-		chineseSentence := &ChineseSentence{}
-		// Get one record, no specified order
-		db.Take(&chineseSentence)
+		// Get one record
+		db.First(&data, data.ID-1)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
-		marshaledData, err := json.Marshal(&chineseSentence)
+		marshaledData, err := json.Marshal(&data)
 		if err != nil {
 			panic("json failed to marshal data")
 		}
