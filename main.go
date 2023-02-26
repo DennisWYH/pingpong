@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -90,7 +91,7 @@ func main() {
 		w.Write(marshaledData)
 	})
 
-	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/getById", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		db := openAndConnectToDB()
 		type ChineseSentence struct {
@@ -104,32 +105,16 @@ func main() {
 		}
 		chineseSentence := &ChineseSentence{}
 		id := r.URL.Query().Get("id")
-		fmt.Println("Next handler, the id received is: ", id)
 		// Get one record
-		db.First(&chineseSentence, id)
-		// SELECT * FROM users LIMIT 1;		// Response with json
-		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Println("The data received from db is: ", &chineseSentence.Chinese)
-		marshaledData, err := json.Marshal(&chineseSentence)
-		if err != nil {
-			panic("json failed to marshal data")
+		err := db.First(&chineseSentence, id).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// If it's already the last ID, we query from the 1st one again.
+			db.First(&chineseSentence, 1)
 		}
-		w.Write(marshaledData)
-	})
-
-	http.HandleFunc("/previous", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
-		db := openAndConnectToDB()
-		var data ChineseSentence
-		id := r.URL.Query().Get("id")
-		fmt.Println("Previous handler, the id received is: ", id)
-		// Get one record
-		db.First(&data, id)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
-		marshaledData, err := json.Marshal(&data)
+		marshaledData, err := json.Marshal(&chineseSentence)
 		if err != nil {
 			panic("json failed to marshal data")
 		}
