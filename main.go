@@ -25,12 +25,9 @@ type ChineseSentence struct {
 	//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
 }
 
-func migrateDBScheme(dbHost, dbUser, dbPass string) (db *gorm.DB) {
+func migrateDBScheme() (db *gorm.DB) {
 	// gorm postgres driver
-	dsnDefinition := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		dbHost, 5432, dbUser, dbPass, "postgres")
-	fmt.Println("The constructed dsnDefinition is: ", dsnDefinition)
+	dsnDefinition := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
@@ -192,14 +189,7 @@ func main() {
 	})
 
 	// Database schema migration
-	PGHOST := "p.7fu7m7a2effzpepzhza6zqnrxi.db.postgresbridge.com"
-	PGUSER := "application"
-	PGPASSWORD := "me81PMoJpJrNugUWRm6TP6ODO5sdPR7f4S8T7AmJIfNsjG1UawnWZrgEHMnVbcI0"
-
-	dbHost := PGHOST
-	dbUser := PGUSER
-	dbPass := PGPASSWORD
-	migrateDBScheme(dbHost, dbUser, dbPass)
+	migrateDBScheme()
 
 	// Read this on heroku dynamic port number
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
