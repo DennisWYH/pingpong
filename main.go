@@ -27,7 +27,7 @@ type ChineseSentence struct {
 
 func migrateDBScheme(dbHost, dbUser, dbPass string) (db *gorm.DB) {
 	// gorm postgres driver
-	dsnDefinition := "host=" + dbHost + " user=" + dbUser + "password=" + dbPass + "5432 sslmode=disable"
+	dsnDefinition := "host=" + dbHost + " user=" + dbUser + " password=" + dbPass + "5432 sslmode=disable"
 	fmt.Println("The constructed dsnDefinition is: ", dsnDefinition)
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
