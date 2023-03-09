@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
 )
 
 func enableCors(w *http.ResponseWriter) {
@@ -24,9 +25,10 @@ type ChineseSentence struct {
 	//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
 }
 
-func migrateDBScheme() (db *gorm.DB) {
+func migrateDBScheme(dbHost, dbUser, dbPass string) (db *gorm.DB) {
 	// gorm postgres driver
-	dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
+	dsnDefinition := "host=" + dbHost + " user=" + dbUser + "password=" + dbPass + "5432 sslmode=disable"
+	fmt.Println("The constructed dsnDefinition is: ", dsnDefinition)
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
@@ -181,21 +183,26 @@ func main() {
 		}
 		w.Write(marshaledData)
 	})
-	//http.HandleFunc("/remove-sentence", func(w http.ResponseWriter, r *http.Request) {
-	//	w.Write([]byte("hello.world"))
-	//})
+
+	// A test handler
+	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello.world"))
+	})
+
+	// Database schema migration
+	dbHost := os.Getenv("PGHOST")
+	dbUser := os.Getenv("PGUSER")
+	dbPass := os.Getenv("PGPASS")
+	migrateDBScheme(dbHost, dbUser, dbPass)
 
 	// Read this on heroku dynamic port number
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
-	//port := os.Getenv("PORT")
-	//if err := http.ListenAndServe(":"+port, nil); err != nil {
-	//	log.Fatal(err)
-	//}
-
-	// Database schema migration
-	migrateDBScheme()
-
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	port := os.Getenv("PORT")
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
+
+	//if err := http.ListenAndServe(":8080", nil); err != nil {
+	//	log.Fatal(err)
+	//}
 }
