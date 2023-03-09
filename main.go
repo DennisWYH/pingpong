@@ -50,7 +50,8 @@ func migrateDBScheme() (db *gorm.DB) {
 
 func openAndConnectToDB() (db *gorm.DB) {
 	// gorm postgres driver
-	dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
+	dsnDefinition := os.Getenv("DATABASE_URL")
+	//dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
