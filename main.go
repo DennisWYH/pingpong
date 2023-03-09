@@ -190,7 +190,7 @@ func main() {
 	})
 
 	// Database schema migration
-	migrateDBScheme()
+	//migrateDBScheme()
 
 	// Read this on heroku dynamic port number
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
