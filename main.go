@@ -190,9 +190,14 @@ func main() {
 	})
 
 	// Database schema migration
-	dbHost := os.Getenv("PGHOST")
-	dbUser := os.Getenv("PGUSER")
-	dbPass := os.Getenv("PGPASS")
+	PGHOST := "p.7fu7m7a2effzpepzhza6zqnrxi.db.postgresbridge.com"
+	//PGDATABASE := "postgres"
+	PGUSER := "application"
+	PGPASSWORD := "7mvg1crmbxsLGIJzr5jFKpEJtvV9gYmRuXZsu2XP0QzdVQDJ6OvhRsqWLXsIlu3p"
+
+	dbHost := PGHOST
+	dbUser := PGUSER
+	dbPass := PGPASSWORD
 	migrateDBScheme(dbHost, dbUser, dbPass)
 
 	// Read this on heroku dynamic port number
