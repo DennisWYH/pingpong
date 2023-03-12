@@ -50,6 +50,7 @@ func migrateDBScheme() (db *gorm.DB) {
 
 func openAndConnectToDB() (db *gorm.DB) {
 	// gorm postgres driver
+	// https://medium.com/@awshawka12/go-postgres-heroku-tutorial-801b3d69e116
 	dsnDefinition := os.Getenv("DATABASE_URL")
 	//dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
@@ -202,4 +203,7 @@ func main() {
 	//if err := http.ListenAndServe(":8080", nil); err != nil {
 	//	log.Fatal(err)
 	//}
+
+	// heroku pg:backups:restore "s3StorageAddress" --app pingpong-fun
+
 }
