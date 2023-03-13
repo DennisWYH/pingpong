@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -83,30 +84,19 @@ func main() {
 		id := r.URL.Query().Get("id")
 		// Get one record
 		err := dbConnection.First(&chineseSentence, id).Error
-		switch err = dbConnection.First(&chineseSentence, id).Error; err {
-		case gorm.ErrRecordNotFound:
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// If it's already the last ID, we query from the 1st one again.
 			dbConnection.First(&chineseSentence, 1)
-		case nil:
-			// we need to inform the frontend about the abnormal of our db.
-			log.WithError(err).Error("handler: getById: There is no data fetched from db.")
-			// We can send for example empty json to frontend
-			w.Header().Set("Content-Type", "application/json")
-			marshaledData, err := json.Marshal("")
-			if err != nil {
-				log.WithError(err).Error("handler: getById: json failed to marshal data")
-			}
-			w.Write(marshaledData)
-		default:
-			// SELECT * FROM users LIMIT 1;		// Response with json
-			// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
-			w.Header().Set("Content-Type", "application/json")
-			marshaledData, err := json.Marshal(&chineseSentence)
-			if err != nil {
-				log.WithError(err).Error("handler: getById: json failed to marshal data")
-			}
-			w.Write(marshaledData)
 		}
+		// we need to inform the frontend about the abnormal of our db.
+		// SELECT * FROM users LIMIT 1;		// Response with json
+		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
+		w.Header().Set("Content-Type", "application/json")
+		marshaledData, err := json.Marshal(&chineseSentence)
+		if err != nil {
+			log.WithError(err).Error("handler: getById: json failed to marshal data")
+		}
+		w.Write(marshaledData)
 	})
 
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
