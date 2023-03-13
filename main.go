@@ -11,6 +11,7 @@ import (
 	"os"
 )
 
+// Global Db connection that can be shared among different handlers.
 var dbConnection *gorm.DB
 
 func enableCors(w *http.ResponseWriter) {
@@ -73,15 +74,6 @@ func main() {
 	// APIs for webinterface
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		type ChineseSentence struct {
-			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
-			gorm.Model
-			DifficultyLevel    int
-			Chinese            string
-			EnglishTranslation string
-			Pinyin             string
-			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
-		}
 		chineseSentence := &ChineseSentence{}
 		// Get one record, no specified order
 		dbConnection.Take(&chineseSentence)
@@ -124,11 +116,6 @@ func main() {
 		w.Write(marshaledData)
 	})
 
-	// APIs for database Admin CRUD management
-	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
-		w.Write([]byte("this page displays a form where user can add sentences"))
-	})
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
 		// Test curl
 		// curl -v -X POST http://localhost:8080/add-sentence -d '{"chinese":"中文第二课", "pinyin": "testpinyin",
@@ -183,11 +170,6 @@ func main() {
 		w.Write(marshaledData)
 	})
 
-	// A test handler
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hello.world"))
-	})
-
 	// Database schema migration
 	//migrateDBScheme()
 
@@ -195,13 +177,13 @@ func main() {
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
 	port := os.Getenv("PORT")
 	dbConnection = openAndConnectToDB()
+	// When testing locally port number is 8080
+	//if err := http.ListenAndServe(":8080", nil); err != nil {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 
-	//if err := http.ListenAndServe(":8080", nil); err != nil {
-	//	log.Fatal(err)
-	//}
-
+	// Documentations:
+	// How to import pg.dump file into heroku's postgres db adds-on
 	// heroku pg:backups:restore "s3StorageAddress" --app pingpong-fun
 }
