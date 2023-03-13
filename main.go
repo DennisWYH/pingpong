@@ -38,15 +38,6 @@ func migrateDBScheme() (db *gorm.DB) {
 	// Migrate the schema
 	// Use pq package for array support in the db field
 	// https://stackoverflow.com/questions/63256680/adding-an-array-of-integers-as-a-data-type-in-a-gorm-model
-	type ChineseSentence struct {
-		Id uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
-		gorm.Model
-		DifficultyLevel    int
-		Chinese            string
-		EnglishTranslation string
-		Pinyin             string
-		//pinyinSlice        pq.StringArray `gorm:"type:text[]"`
-	}
 	db.AutoMigrate(&ChineseSentence{})
 	return db
 }
@@ -89,15 +80,6 @@ func main() {
 
 	http.HandleFunc("/getById", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		type ChineseSentence struct {
-			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
-			gorm.Model
-			DifficultyLevel    int
-			Chinese            string
-			EnglishTranslation string
-			Pinyin             string
-			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
-		}
 		chineseSentence := &ChineseSentence{}
 		id := r.URL.Query().Get("id")
 		// Get one record
@@ -149,14 +131,6 @@ func main() {
 
 	http.HandleFunc("/list-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		type ChineseSentence struct {
-			gorm.Model
-			DifficultyLevel    int
-			Chinese            string
-			EnglishTranslation string
-			Pinyin             string
-			//PinyinSlice        pq.StringArray `gorm:"type:text[]"`
-		}
 		chineseSentences := &[]ChineseSentence{}
 		//db.First(&chineseSentence)
 		dbConnection.Find(&chineseSentences)
