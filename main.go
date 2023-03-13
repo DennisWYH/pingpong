@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
 	"os"
 )
@@ -33,7 +33,7 @@ func migrateDBScheme() (db *gorm.DB) {
 	dsnDefinition := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		log.WithError(err).Error("migrateDBScheme: failed to connect to db")
 	}
 	// Migrate the schema
 	// Use pq package for array support in the db field
@@ -49,7 +49,7 @@ func openAndConnectToDB() (db *gorm.DB) {
 	//dsnDefinition := "host=localhost user=postgres password= dbname=postgres port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsnDefinition), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		log.WithError(err).Error("openAndConnectToDB: failed to connect to db")
 	}
 	return db
 }
@@ -73,7 +73,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		marshaledData, err := json.Marshal(&chineseSentence)
 		if err != nil {
-			panic("json failed to marshal data")
+			log.WithError(err).Error("handler: /: json failed to marshal data")
 		}
 		w.Write(marshaledData)
 	})
@@ -93,7 +93,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		marshaledData, err := json.Marshal(&chineseSentence)
 		if err != nil {
-			panic("json failed to marshal data")
+			log.WithError(err).Error("handler: getById: json failed to marshal data")
 		}
 		w.Write(marshaledData)
 	})
@@ -111,9 +111,8 @@ func main() {
 			decoder := json.NewDecoder(r.Body)
 			err := decoder.Decode(&data)
 			if err != nil {
-				fmt.Println("an error has occured while decoding request body: ", err)
+				log.WithError(err).Error("handler: add-sentence: an error has occurred while decoding request body")
 			}
-			fmt.Println("The data decoded from http request body is:", data)
 		}
 		validateSentenceData(data)
 		//Create an entry in the db
@@ -124,7 +123,7 @@ func main() {
 		w.WriteHeader(http.StatusCreated)
 		marshaledData, err := json.Marshal(&data)
 		if err != nil {
-			fmt.Println("an error has occured while marshalling data: ", err)
+			log.WithError(err).Error("handler: add-sentence: an error has occurred while marshalling data")
 		}
 		w.Write(marshaledData)
 	})
@@ -139,7 +138,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		marshaledData, err := json.Marshal(&chineseSentences)
 		if err != nil {
-			panic("json failed to marshal data")
+			log.WithError(err).Error("json failed to marshal data")
 		}
 		w.Write(marshaledData)
 	})
@@ -154,7 +153,7 @@ func main() {
 	// When testing locally port number is 8080
 	//if err := http.ListenAndServe(":8080", nil); err != nil {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("main func: failed to start the local server")
 	}
 
 	// Documentations:
