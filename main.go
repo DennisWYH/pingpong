@@ -11,6 +11,8 @@ import (
 	"os"
 )
 
+var dbConnection *gorm.DB
+
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
@@ -71,7 +73,6 @@ func main() {
 	// APIs for webinterface
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		db := openAndConnectToDB()
 		type ChineseSentence struct {
 			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 			gorm.Model
@@ -83,7 +84,7 @@ func main() {
 		}
 		chineseSentence := &ChineseSentence{}
 		// Get one record, no specified order
-		db.Take(&chineseSentence)
+		dbConnection.Take(&chineseSentence)
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
@@ -96,7 +97,6 @@ func main() {
 
 	http.HandleFunc("/getById", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		db := openAndConnectToDB()
 		type ChineseSentence struct {
 			ID uint64 `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 			gorm.Model
@@ -109,10 +109,10 @@ func main() {
 		chineseSentence := &ChineseSentence{}
 		id := r.URL.Query().Get("id")
 		// Get one record
-		err := db.First(&chineseSentence, id).Error
+		err := dbConnection.First(&chineseSentence, id).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// If it's already the last ID, we query from the 1st one again.
-			db.First(&chineseSentence, 1)
+			dbConnection.First(&chineseSentence, 1)
 		}
 		// SELECT * FROM users LIMIT 1;		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
@@ -148,8 +148,7 @@ func main() {
 		}
 		validateSentenceData(data)
 		//Create an entry in the db
-		db := openAndConnectToDB()
-		db.Create(&ChineseSentence{DifficultyLevel: data.DifficultyLevel,
+		dbConnection.Create(&ChineseSentence{DifficultyLevel: data.DifficultyLevel,
 			Chinese: data.Chinese, EnglishTranslation: data.EnglishTranslation,
 			Pinyin: data.Pinyin},
 		)
@@ -163,7 +162,6 @@ func main() {
 
 	http.HandleFunc("/list-sentence", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		db := openAndConnectToDB()
 		type ChineseSentence struct {
 			gorm.Model
 			DifficultyLevel    int
@@ -174,7 +172,7 @@ func main() {
 		}
 		chineseSentences := &[]ChineseSentence{}
 		//db.First(&chineseSentence)
-		db.Find(&chineseSentences)
+		dbConnection.Find(&chineseSentences)
 		// Response with json
 		// https://stackoverflow.com/questions/31622052/how-to-serve-up-a-json-response-using-go
 		w.Header().Set("Content-Type", "application/json")
@@ -196,6 +194,7 @@ func main() {
 	// Read this on heroku dynamic port number
 	// https://stackoverflow.com/questions/56936448/deploying-a-golang-app-on-heroku-build-succeed-but-application-error
 	port := os.Getenv("PORT")
+	dbConnection = openAndConnectToDB()
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
@@ -205,5 +204,4 @@ func main() {
 	//}
 
 	// heroku pg:backups:restore "s3StorageAddress" --app pingpong-fun
-
 }
