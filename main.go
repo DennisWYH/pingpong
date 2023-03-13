@@ -166,7 +166,6 @@ func main() {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.WithError(err).Error("main func: failed to start the local server")
 	}
-
 	// Documentations:
 	// How to import pg.dump file into heroku's postgres db adds-on
 	// heroku pg:backups:restore "s3StorageAddress" --app pingpong-fun
