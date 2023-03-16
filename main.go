@@ -109,7 +109,11 @@ func main() {
 		if err != nil {
 			log.WithError(err).Error("handler: removebyId: error while removing a sentence")
 		}
-		w.Write([]byte(uint(http.StatusOK)))
+		marshaledData, err := json.Marshal(&ChineseSentence{})
+		if err != nil {
+			log.WithError(err).Error("handler: removeById: an error has occurred while marshalling data")
+		}
+		w.Write(marshaledData)
 	})
 
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
