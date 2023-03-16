@@ -106,19 +106,20 @@ func main() {
 		id := r.URL.Query().Get("id")
 		log.Info("The id of sentence to be removed is: ", id)
 		log.Info(" the request query is, ", r.URL.Query())
-		err := dbConnection.Delete(&ChineseSentence{}, id).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-		}
-		if err != nil {
-			log.WithError(err).Error("handler: removebyId: error while removing a sentence")
-		}
 
-		// Prepare for a response
-		marshaledData, err := json.Marshal(&ChineseSentence{})
-		if err != nil {
-			log.WithError(err).Error("handler: removeById: an error has occurred while marshalling data")
+		if id != "" {
+			log.Info("------------ id is not empty")
+			err := dbConnection.Delete(&ChineseSentence{}, id).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+			}
+			if err != nil {
+				log.WithError(err).Error("handler: removebyId: error while removing a sentence")
+			}
+
+			// Prepare for a response
+			w.WriteHeader(http.StatusOK)
+
 		}
-		w.Write(marshaledData)
 	})
 
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
