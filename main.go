@@ -105,6 +105,7 @@ func main() {
 		// Remove one record
 		id := r.URL.Query().Get("id")
 		log.Info("The id of sentence to be removed is: ", id)
+		log.Info(" the request query is, ", r.URL.Query())
 		err := dbConnection.Delete(&ChineseSentence{}, id).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 		}
