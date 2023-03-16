@@ -99,6 +99,19 @@ func main() {
 		w.Write(marshaledData)
 	})
 
+	http.HandleFunc("/removeById", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		id := r.URL.Query().Get("id")
+		// Remove one record
+		err := dbConnection.Delete(&ChineseSentence{}, id).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+		}
+		if err != nil {
+			log.WithError(err).Error("handler: removebyId: error while removing a sentence")
+		}
+		w.Write([]byte(uint(http.StatusOK)))
+	})
+
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
 		// Test curl
 		// curl -v -X POST http://localhost:8080/add-sentence -d '{"chinese":"中文第二课", "pinyin": "testpinyin",
