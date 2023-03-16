@@ -101,14 +101,18 @@ func main() {
 
 	http.HandleFunc("/removeById", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		id := r.URL.Query().Get("id")
+
 		// Remove one record
+		id := r.URL.Query().Get("id")
+		log.Info("The id of sentence to be removed is: ", id)
 		err := dbConnection.Delete(&ChineseSentence{}, id).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 		}
 		if err != nil {
 			log.WithError(err).Error("handler: removebyId: error while removing a sentence")
 		}
+
+		// Prepare for a response
 		marshaledData, err := json.Marshal(&ChineseSentence{})
 		if err != nil {
 			log.WithError(err).Error("handler: removeById: an error has occurred while marshalling data")
