@@ -86,7 +86,7 @@ func main() {
 			log.Info("handler: make-pinyin: missing request body")
 		}
 		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&data)
+		err := decoder.Decode(&data.Chinese)
 		if err != nil {
 			log.WithError(err).Error("handler: make-pinyin: an error has occurred while decoding request body")
 		}
