@@ -81,7 +81,7 @@ func main() {
 
 	http.HandleFunc("/make-pinyin", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		var data string
+		data := ""
 		if r.Body == nil {
 			log.Info("handler: make-pinyin: missing request body")
 		}
