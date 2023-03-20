@@ -3,6 +3,7 @@ module pingpong
 go 1.19
 
 require (
+	github.com/mozillazg/go-pinyin v0.19.0
 	github.com/sirupsen/logrus v1.9.0
 	gorm.io/driver/postgres v1.4.7
 	gorm.io/gorm v1.24.3

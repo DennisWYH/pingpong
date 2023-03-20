@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mozillazg/go-pinyin"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -78,6 +79,32 @@ func main() {
 		w.Write(marshaledData)
 	})
 
+	http.HandleFunc("/make-pinyin", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		var data ChineseSentence
+		if r.Body == nil {
+			log.Info("handler: make-pinyin: missing request body")
+		}
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&data)
+		if err != nil {
+			log.WithError(err).Error("handler: make-pinyin: an error has occurred while decoding request body")
+		}
+		validateSentenceData(data)
+		chinese := data.Chinese
+
+		a := pinyin.NewArgs()
+		a.Style = pinyin.Tone
+		pinyin := pinyin.Pinyin(chinese, a)
+
+		w.WriteHeader(http.StatusCreated)
+		marshaledData, err := json.Marshal(&pinyin)
+		if err != nil {
+			log.WithError(err).Error("handler: make-pinyin: an error has occurred while marshalling data")
+		}
+		w.Write(marshaledData)
+	})
+
 	http.HandleFunc("/getById", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		chineseSentence := &ChineseSentence{}
@@ -105,19 +132,21 @@ func main() {
 		// Remove one record
 		id := r.URL.Query().Get("id")
 		log.Info("The id of sentence to be removed is: ", id)
-		err := dbConnection.Delete(&ChineseSentence{}, id).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-		}
-		if err != nil {
-			log.WithError(err).Error("handler: removebyId: error while removing a sentence")
-		}
+		log.Info(" the request query is, ", r.URL.Query())
 
-		// Prepare for a response
-		marshaledData, err := json.Marshal(&ChineseSentence{})
-		if err != nil {
-			log.WithError(err).Error("handler: removeById: an error has occurred while marshalling data")
+		if id != "" {
+			log.Info("------------ id is not empty")
+			err := dbConnection.Delete(&ChineseSentence{}, id).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+			}
+			if err != nil {
+				log.WithError(err).Error("handler: removebyId: error while removing a sentence")
+			}
+
+			// Prepare for a response
+			w.WriteHeader(http.StatusOK)
+
 		}
-		w.Write(marshaledData)
 	})
 
 	http.HandleFunc("/add-sentence", func(w http.ResponseWriter, r *http.Request) {
