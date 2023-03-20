@@ -81,18 +81,18 @@ func main() {
 
 	http.HandleFunc("/make-pinyin", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
-		data := ""
+		chineseSentence := &ChineseSentence{}
 		if r.Body == nil {
 			log.Info("handler: make-pinyin: missing request body")
 		}
 		log.Info("what's in the request: ", r)
 		log.Info("what's in the request: ", r.Body)
 		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&data)
+		err := decoder.Decode(&chineseSentence)
 		if err != nil {
 			log.WithError(err).Error("handler: make-pinyin: an error has occurred while decoding request body")
 		}
-		chinese := data
+		chinese := chineseSentence.Chinese
 		log.Info("handler: make-pinyin: The chines to be converted into pinyin is:", chinese)
 
 		a := pinyin.NewArgs()
